@@ -17,7 +17,7 @@ const navItems = [
 
 export default function Sidebar({ className = '' }: { className?: string }) {
   const pathname = usePathname();
-  const { language, toggleLanguage } = useLanguage();
+  const { language, toggleLanguage, t } = useLanguage();
 
   if (pathname === '/login') return null;
 
@@ -27,7 +27,7 @@ export default function Sidebar({ className = '' }: { className?: string }) {
         <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
           Farm ERP
         </h1>
-        <button 
+        <button
           onClick={toggleLanguage}
           className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-2 text-xs font-bold"
           title="Toggle Language (English / Arabic)"
@@ -36,6 +36,7 @@ export default function Sidebar({ className = '' }: { className?: string }) {
           {language === 'ar' ? 'EN' : 'AR'}
         </button>
       </div>
+
       <nav className="flex-1 overflow-y-auto py-6 flex flex-col gap-2 px-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -49,12 +50,13 @@ export default function Sidebar({ className = '' }: { className?: string }) {
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
               }`}
             >
-              <item.icon className={`h-5 w-5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
-              {item.name}
+              <item.icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+              <span>{t(item.name)}</span>
             </Link>
           );
         })}
       </nav>
+
       <div className="p-4 flex flex-col gap-2 border-t border-slate-800 text-sm text-slate-500">
         <LogoutButton />
         <div className="mt-2 ps-4 border-t border-slate-800/50 pt-2">

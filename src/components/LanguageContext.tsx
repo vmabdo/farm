@@ -7,11 +7,13 @@ type Language = 'en' | 'ar';
 interface LanguageContextType {
   language: Language;
   toggleLanguage: () => void;
+  t: (key: string) => string;
 }
 
 export const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
-  toggleLanguage: () => {}
+  toggleLanguage: () => {},
+  t: (key: string) => key,
 });
 
 const dictionary: Record<string, string> = {
@@ -387,8 +389,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const t = (key: string): string => {
+    if (language === 'ar') return dictionary[key] ?? key;
+    return key;
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage }}>
+    <LanguageContext.Provider value={{ language, toggleLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
