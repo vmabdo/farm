@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Users, Banknote } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Users, Banknote, Search } from 'lucide-react';
 import { deleteWorker, deletePayroll } from '@/app/actions/workers';
 
 import AddWorkerDialog from './AddWorkerDialog';
@@ -32,6 +32,7 @@ export default function WorkersClientView({
   const [payrollSortDesc, setPayrollSortDesc] = useState<boolean>(true);
   const [isAddPayrollOpen, setIsAddPayrollOpen] = useState(false);
   const [editPayrollData, setEditPayrollData] = useState<PayrollData | null>(null);
+  const [search, setSearch] = useState('');
 
   // ==========================
   // Memoized Sorted Data
@@ -73,6 +74,24 @@ export default function WorkersClientView({
       return 0;
     });
   }, [initialPayrolls, payrollSortCol, payrollSortDesc]);
+
+  const filteredWorkers = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedWorkers;
+    return sortedWorkers.filter((w) =>
+      [w.name, w.role, w.nationalId, w.phone]
+        .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedWorkers, search]);
+
+  const filteredPayrolls = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedPayrolls;
+    return sortedPayrolls.filter((p) =>
+      [p.worker?.name, p.type, p.notes]
+        .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedPayrolls, search]);
 
   // ==========================
   // Handlers
@@ -116,6 +135,18 @@ export default function WorkersClientView({
           >
             Payroll Logs
           </button>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={activeTab === 'workers' ? 'Search workers...' : 'Search payroll...'}
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+          />
         </div>
 
         <div>
@@ -192,7 +223,7 @@ export default function WorkersClientView({
             <tbody className="divide-y divide-slate-100">
               
               {/* WORKERS ROWS */}
-              {activeTab === 'workers' && sortedWorkers.map((worker: WorkerData) => (
+              {activeTab === 'workers' && filteredWorkers.map((worker: WorkerData) => (
                 <tr key={worker.id} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Users className="w-4 h-4 text-slate-400"/> {worker.name}</td>
                   <td className="px-6 py-4 text-slate-600">{worker.role}</td>
@@ -210,12 +241,12 @@ export default function WorkersClientView({
                   </td>
                 </tr>
               ))}
-              {activeTab === 'workers' && sortedWorkers.length === 0 && (
+              {activeTab === 'workers' && filteredWorkers.length === 0 && (
                 <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">No workers found.</td></tr>
               )}
 
               {/* PAYROLL ROWS */}
-              {activeTab === 'payroll' && sortedPayrolls.map((payroll: PayrollData) => (
+              {activeTab === 'payroll' && filteredPayrolls.map((payroll: PayrollData) => (
                 <tr key={payroll.id} className="hover:bg-blue-50/20 transition">
                   <td className="px-6 py-4 text-slate-600">{new Date(payroll.paymentDate).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{payroll.worker.name}</td>
@@ -236,7 +267,7 @@ export default function WorkersClientView({
                   </td>
                 </tr>
               ))}
-              {activeTab === 'payroll' && sortedPayrolls.length === 0 && (
+              {activeTab === 'payroll' && filteredPayrolls.length === 0 && (
                 <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">No payroll records logged.</td></tr>
               )}
 

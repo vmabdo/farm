@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, TrendingUp, TrendingDown, Package } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, TrendingUp, TrendingDown, Package, Search } from 'lucide-react';
 import { deleteFeedItem, deleteFeedOrder, deleteFeedConsumption } from '@/app/actions/feed';
 
 import AddFeedItemDialog from './AddFeedItemDialog';
@@ -43,6 +43,7 @@ export default function FeedClientView({
   const [consSortDesc, setConsSortDesc] = useState<boolean>(true);
   const [isAddConsOpen, setIsAddConsOpen] = useState(false);
   const [editConsData, setEditConsData] = useState<FeedConsumption | null>(null);
+  const [search, setSearch] = useState('');
 
   // ==========================
   // Memoized Sorted Data
@@ -98,6 +99,30 @@ export default function FeedClientView({
       return 0;
     });
   }, [initialConsumptions, consSortCol, consSortDesc]);
+
+  const filteredItems = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedItems;
+    return sortedItems.filter((i) =>
+      [i.name, i.type, i.unit].filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedItems, search]);
+
+  const filteredOrders = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedOrders;
+    return sortedOrders.filter((o) =>
+      [o.feedItem?.name, o.supplier].filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedOrders, search]);
+
+  const filteredConsumptions = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedConsumptions;
+    return sortedConsumptions.filter((c) =>
+      [c.feedItem?.name, c.notes].filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedConsumptions, search]);
 
   // ==========================
   // Handlers
@@ -158,6 +183,18 @@ export default function FeedClientView({
           >
             Consumption Logs
           </button>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search feed..."
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+          />
         </div>
 
         <div>
@@ -262,7 +299,7 @@ export default function FeedClientView({
             <tbody className="divide-y divide-slate-100">
               
               {/* INVENTORY ROWS */}
-              {activeTab === 'inventory' && sortedItems.map((item: FeedItem) => (
+              {activeTab === 'inventory' && filteredItems.map((item: FeedItem) => (
                 <tr key={item.id} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Package className="w-4 h-4 text-slate-400"/> {item.name}</td>
                   <td className="px-6 py-4 text-slate-600">{item.type}</td>
@@ -274,12 +311,12 @@ export default function FeedClientView({
                   </td>
                 </tr>
               ))}
-              {activeTab === 'inventory' && sortedItems.length === 0 && (
+              {activeTab === 'inventory' && filteredItems.length === 0 && (
                 <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No feed items found. Add some to get started!</td></tr>
               )}
 
               {/* ORDERS ROWS */}
-              {activeTab === 'orders' && sortedOrders.map((order: FeedOrder) => (
+              {activeTab === 'orders' && filteredOrders.map((order: FeedOrder) => (
                 <tr key={order.id} className="hover:bg-indigo-50/20 transition">
                   <td className="px-6 py-4 text-slate-600">{new Date(order.orderDate).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{order.feedItem.name}</td>
@@ -292,12 +329,12 @@ export default function FeedClientView({
                   </td>
                 </tr>
               ))}
-              {activeTab === 'orders' && sortedOrders.length === 0 && (
+              {activeTab === 'orders' && filteredOrders.length === 0 && (
                 <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">No feed orders logged.</td></tr>
               )}
 
               {/* CONSUMPTION ROWS */}
-              {activeTab === 'consumption' && sortedConsumptions.map((cons: FeedConsumption) => (
+              {activeTab === 'consumption' && filteredConsumptions.map((cons: FeedConsumption) => (
                 <tr key={cons.id} className="hover:bg-amber-50/20 transition">
                   <td className="px-6 py-4 text-slate-600">{new Date(cons.date).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{cons.feedItem.name}</td>
@@ -309,7 +346,7 @@ export default function FeedClientView({
                   </td>
                 </tr>
               ))}
-              {activeTab === 'consumption' && sortedConsumptions.length === 0 && (
+              {activeTab === 'consumption' && filteredConsumptions.length === 0 && (
                 <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No feed consumption logged.</td></tr>
               )}
 

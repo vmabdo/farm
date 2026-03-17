@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Scale } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Scale, Search } from 'lucide-react';
 import { deleteCattle } from '@/app/actions/cattle';
 import AddCattleDialog from './AddCattleDialog';
 import EditCattleDialog from './EditCattleDialog';
@@ -21,6 +21,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
 
   const [weightCattleData, setWeightCattleData] = useState<CattleData | null>(null);
   const [isWeightOpen, setIsWeightOpen] = useState(false);
+  const [search, setSearch] = useState('');
 
   // Derive sorted data from rawData on the fly
   const sortedData = useMemo(() => {
@@ -47,6 +48,16 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
       return 0;
     });
   }, [rawData, sortCol, sortDesc]);
+
+  const filteredData = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedData;
+    return sortedData.filter((c) =>
+      [c.tagNumber, c.breed, c.status]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedData, search]);
 
   const sortBy = (col: string) => {
     if (sortCol === col) {
@@ -78,10 +89,21 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
 
   return (
     <>
-      <div className="flex justify-end mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+        {/* Search */}
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search cattle..."
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+          />
+        </div>
         <button
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />
           Add Cattle
@@ -119,7 +141,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {sortedData.map((cattle: CattleData) => {
+              {filteredData.map((cattle: CattleData) => {
                 const diff = getWeightDiff(cattle);
                 const diffColor = diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-rose-600' : 'text-slate-500';
                 
@@ -168,7 +190,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
                   </tr>
                 );
               })}
-              {sortedData.length === 0 && (
+              {filteredData.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-slate-500">
                     No cattle records found. Add some to get started!

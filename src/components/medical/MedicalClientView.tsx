@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Syringe, HeartPulse } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Syringe, HeartPulse, Search } from 'lucide-react';
 import { deleteMedicine, deleteMedicalRecord } from '@/app/actions/medical';
 
 import AddMedicineDialog from './AddMedicineDialog';
@@ -35,6 +35,7 @@ export default function MedicalClientView({
   const [recSortDesc, setRecSortDesc] = useState<boolean>(true);
   const [isAddRecOpen, setIsAddRecOpen] = useState(false);
   const [editRecData, setEditRecData] = useState<MedicalRecordData | null>(null);
+  const [search, setSearch] = useState('');
 
   // ==========================
   // Memoized Sorted Data
@@ -85,6 +86,24 @@ export default function MedicalClientView({
     });
   }, [initialRecords, recSortCol, recSortDesc]);
 
+  const filteredMedicines = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedMedicines;
+    return sortedMedicines.filter((m) =>
+      [m.name, m.supplier, m.unit]
+        .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedMedicines, search]);
+
+  const filteredRecords = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedRecords;
+    return sortedRecords.filter((r) =>
+      [r.cattle?.tagNumber, r.medicine?.name, r.type, r.notes]
+        .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedRecords, search]);
+
   // ==========================
   // Handlers
   // ==========================
@@ -127,6 +146,18 @@ export default function MedicalClientView({
           >
             Treatment Logs
           </button>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={activeTab === 'inventory' ? 'Search medicines...' : 'Search treatments...'}
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+          />
         </div>
 
         <div>
@@ -203,7 +234,7 @@ export default function MedicalClientView({
             <tbody className="divide-y divide-slate-100">
               
               {/* INVENTORY ROWS */}
-              {activeTab === 'inventory' && sortedMedicines.map((med: MedicineData) => (
+              {activeTab === 'inventory' && filteredMedicines.map((med: MedicineData) => (
                 <tr key={med.id} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Syringe className="w-4 h-4 text-slate-400"/> {med.name}</td>
                   <td className="px-6 py-4 text-slate-600">{med.supplier || '-'}</td>
@@ -218,12 +249,12 @@ export default function MedicalClientView({
                   </td>
                 </tr>
               ))}
-              {activeTab === 'inventory' && sortedMedicines.length === 0 && (
+              {activeTab === 'inventory' && filteredMedicines.length === 0 && (
                 <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">No medical inventory found.</td></tr>
               )}
 
               {/* RECORD ROWS */}
-              {activeTab === 'records' && sortedRecords.map((rec: MedicalRecordData) => (
+              {activeTab === 'records' && filteredRecords.map((rec: MedicalRecordData) => (
                 <tr key={rec.id} className="hover:bg-rose-50/20 transition">
                   <td className="px-6 py-4 text-slate-600">{new Date(rec.treatmentDate).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{rec.cattle.tagNumber}</td>
@@ -237,7 +268,7 @@ export default function MedicalClientView({
                   </td>
                 </tr>
               ))}
-              {activeTab === 'records' && sortedRecords.length === 0 && (
+              {activeTab === 'records' && filteredRecords.length === 0 && (
                 <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">No treatment records logged.</td></tr>
               )}
 

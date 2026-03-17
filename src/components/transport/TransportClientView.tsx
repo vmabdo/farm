@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Truck } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Truck, Search } from 'lucide-react';
 import { deleteTransportRent } from '@/app/actions/transport';
 
 import AddTransportDialog from './AddTransportDialog';
@@ -18,6 +18,7 @@ export default function TransportClientView({
   const [sortDesc, setSortDesc] = useState<boolean>(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editData, setEditData] = useState<TransportData | null>(null);
+  const [search, setSearch] = useState('');
 
   // ==========================
   // Memoized Sorted Data
@@ -41,6 +42,15 @@ export default function TransportClientView({
     });
   }, [initialTransports, sortCol, sortDesc]);
 
+  const filteredTransports = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedTransports;
+    return sortedTransports.filter((t) =>
+      [t.driverName, t.vehicleType, t.purpose, t.notes]
+        .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedTransports, search]);
+
   // ==========================
   // Handlers
   // ==========================
@@ -58,11 +68,21 @@ export default function TransportClientView({
 
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        <div></div> {/* spacer */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6">
+        {/* Search bar */}
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search transport..."
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+          />
+        </div>
         <button
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
         >
           <Plus className="w-5 h-5" /> Log Transport
         </button>
@@ -93,7 +113,7 @@ export default function TransportClientView({
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-              {sortedTransports.map((log: TransportData) => (
+              {filteredTransports.map((log: TransportData) => (
                 <tr key={log.id} className="hover:bg-blue-50/20 transition">
                   <td className="px-6 py-4 text-slate-600">{new Date(log.travelDate).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Truck className="w-4 h-4 text-slate-400"/> {log.driverName || '-'}</td>
@@ -107,7 +127,7 @@ export default function TransportClientView({
                   </td>
                 </tr>
               ))}
-              {sortedTransports.length === 0 && (
+              {filteredTransports.length === 0 && (
                 <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">No transport records logged.</td></tr>
               )}
             </tbody>
