@@ -1,0 +1,95 @@
+﻿Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 1740.9ms
+  Running TypeScript ...
+  Collecting page data using 19 workers ...
+node.exe : Error: Failed to 
+collect configuration for 
+/cattle
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Error:   
+  Failed t...ion for /catt   
+ le:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+    at ignore-listed frames {
+  [cause]: Error [PrismaClien
+tInitializationError]: 
+`PrismaClient` needs to be 
+constructed with a 
+non-empty, valid 
+`PrismaClientOptions`:
+  
+  ```
+  new PrismaClient({
+    ...
+  })
+  ```
+  
+  or
+  
+  ```
+  constructor() {
+    super({ ... });
+  }
+  ```
+            
+      at module evaluation (D
+:\farm-erp\.next\server\chunk
+s\ssr\[root-of-the-server]__5
+2071b7b._.js:1:195)
+      at instantiateModule (D
+:\farm-erp\.next\server\chunk
+s\ssr\[turbopack]_runtime.js:
+740:9)
+      at getOrInstantiateModu
+leFromParent (D:\farm-erp\.ne
+xt\server\chunks\ssr\[turbopa
+ck]_runtime.js:763:12)
+      at Context.esmImport 
+[as i] (D:\farm-erp\.next\ser
+ver\chunks\ssr\[turbopack]_ru
+ntime.js:228:20)
+      at module evaluation (D
+:\farm-erp\.next\server\chunk
+s\ssr\[root-of-the-server]__0
+3d7aabc._.js:1:1371)
+      at instantiateModule (D
+:\farm-erp\.next\server\chunk
+s\ssr\[turbopack]_runtime.js:
+740:9)
+      at getOrInstantiateModu
+leFromParent (D:\farm-erp\.ne
+xt\server\chunks\ssr\[turbopa
+ck]_runtime.js:763:12)
+      at Context.esmImport 
+[as i] (D:\farm-erp\.next\ser
+ver\chunks\ssr\[turbopack]_ru
+ntime.js:228:20)
+      at module evaluation (D
+:\farm-erp\.next\server\chunk
+s\ssr\_406c0365._.js:1:33) {
+    clientVersion: '7.5.0',
+    errorCode: undefined,
+    retryable: undefined
+  }
+}
+
+> Build error occurred
+Error: Failed to collect 
+page data for /cattle
+    at ignore-listed frames {
+  type: 'Error'
+}
