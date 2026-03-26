@@ -20,8 +20,8 @@ export default async function FeedPage() {
     <div className="space-y-6">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Feed & Inventory</h1>
-          <p className="text-slate-500 mt-2">Manage feed stock, track purchases, and log daily consumption.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">الأعلاف والمخزون</h1>
+          <p className="text-slate-500 mt-2">إدارة مخزون الأعلاف، تتبع المشتريات، وتسجيل الاستهلاك اليومي.</p>
         </div>
       </header>
 

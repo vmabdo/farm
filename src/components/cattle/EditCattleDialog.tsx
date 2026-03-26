@@ -27,7 +27,7 @@ export default function EditCattleDialog({ isOpen, onClose, cattle }: { isOpen: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-800">Edit Cattle</h2>
+          <h2 className="text-xl font-bold text-slate-800">تعديل بيانات العجل</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
@@ -35,7 +35,7 @@ export default function EditCattleDialog({ isOpen, onClose, cattle }: { isOpen: 
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Tag Number *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">رقم البطاقة (التاج) *</label>
             <input 
               name="tagNumber" 
               required 
@@ -44,15 +44,15 @@ export default function EditCattleDialog({ isOpen, onClose, cattle }: { isOpen: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Breed</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">السلالة</label>
             <input 
               name="breed" 
-              defaultValue={cattle.breed || ''}
+              defaultValue={cattle.breed}
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Entry Date *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ الدخول *</label>
             <input 
               name="entryDate" 
               type="date" 
@@ -62,16 +62,16 @@ export default function EditCattleDialog({ isOpen, onClose, cattle }: { isOpen: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Status *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الحالة *</label>
             <select
               name="status"
               required
               defaultValue={cattle.status}
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
             >
-              <option value="ACTIVE">Active</option>
-              <option value="SOLD">Sold</option>
-              <option value="DECEASED">Deceased</option>
+              <option value="ACTIVE">القطيع النشط</option>
+              <option value="SOLD">مُباع</option>
+              <option value="DECEASED">نافق</option>
             </select>
           </div>
 
@@ -80,15 +80,13 @@ export default function EditCattleDialog({ isOpen, onClose, cattle }: { isOpen: 
               type="button" 
               onClick={onClose}
               className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
-            >
-              Cancel
-            </button>
+            >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
               className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
             >
-              {loading ? 'Updating...' : 'Update Record'}
+              {loading ? 'جاري الحفظ...' : 'تعديل'}
             </button>
           </div>
         </form>

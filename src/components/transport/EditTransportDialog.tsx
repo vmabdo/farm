@@ -27,7 +27,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-800">Edit Transport Expense</h2>
+          <h2 className="text-xl font-bold text-slate-800">تعديل بيانات المركبة</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
@@ -35,7 +35,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Date *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">التاريخ *</label>
             <input 
               name="travelDate" 
               type="date"
@@ -45,7 +45,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Driver Name *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">اسم السائق *</label>
             <input 
               name="driverName" 
               required 
@@ -54,7 +54,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Vehicle Details *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">تفاصيل المركبة *</label>
             <input 
               name="vehicleType" 
               required 
@@ -63,7 +63,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Purpose *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الغرض *</label>
             <input 
               name="purpose" 
               required 
@@ -72,10 +72,11 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Trip Cost (EGP) *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">تكلفة الرحلة (ج.م) *</label>
             <input 
               name="cost" 
               type="number" 
+              min="0"
               step="0.01"
               required 
               defaultValue={transport.cost}
@@ -83,7 +84,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">ملاحظات</label>
             <textarea 
               name="notes"
               rows={2} 
@@ -97,15 +98,13 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
               type="button" 
               onClick={onClose}
               className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
-            >
-              Cancel
-            </button>
+            >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
               className="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             >
-              {loading ? 'Updating...' : 'Update Transport'}
+              {loading ? 'جاري التحديث...' : 'تحديث البيانات'}
             </button>
           </div>
         </form>

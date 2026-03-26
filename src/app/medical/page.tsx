@@ -21,8 +21,8 @@ export default async function MedicalPage() {
     <div className="space-y-6">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Medical & Vaccinations</h1>
-          <p className="text-slate-500 mt-2">Manage medical inventory and track physical treatments.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">السجلات الطبية والتحصينات</h1>
+          <p className="text-slate-500 mt-2">إدارة مخزون الأدوية وتتبع العلاجات الخاصة بالقطيع.</p>
         </div>
       </header>
 

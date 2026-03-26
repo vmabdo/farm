@@ -27,7 +27,7 @@ export default function EditMedicineDialog({ isOpen, onClose, medicine }: { isOp
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-800">Edit Medicine Info</h2>
+          <h2 className="text-xl font-bold text-slate-800">تعديل الدواء / التحصين</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
@@ -35,7 +35,7 @@ export default function EditMedicineDialog({ isOpen, onClose, medicine }: { isOp
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Medicine Name *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">اسم الدواء *</label>
             <input 
               name="name" 
               required 
@@ -44,7 +44,7 @@ export default function EditMedicineDialog({ isOpen, onClose, medicine }: { isOp
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Supplier</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الشركة المصنعة / المورد</label>
             <input 
               name="supplier" 
               defaultValue={medicine.supplier || ''}
@@ -52,10 +52,11 @@ export default function EditMedicineDialog({ isOpen, onClose, medicine }: { isOp
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Current Stock Amount *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">المخزون الحالي *</label>
             <input 
               name="currentStock" 
               type="number" 
+              min="0"
               step="0.01"
               required 
               defaultValue={medicine.currentStock}
@@ -63,21 +64,21 @@ export default function EditMedicineDialog({ isOpen, onClose, medicine }: { isOp
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Unit of Measurement *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الوحدة المرجعية *</label>
             <select
               name="unit"
               required
               defaultValue={medicine.unit}
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
             >
-              <option value="ML">Milliliters (ML)</option>
-              <option value="MG">Milligrams (MG)</option>
-              <option value="DOSES">Doses</option>
-              <option value="BOTTLES">Bottles</option>
+              <option value="ML">مل (ML)</option>
+              <option value="MG">جرام / ملجم (MG)</option>
+              <option value="DOSES">جرعات</option>
+              <option value="BOTTLES">زجاجات</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Expiration Date</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ الصلاحية</label>
             <input 
               name="expirationDate" 
               type="date" 
@@ -91,15 +92,13 @@ export default function EditMedicineDialog({ isOpen, onClose, medicine }: { isOp
               type="button" 
               onClick={onClose}
               className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
-            >
-              Cancel
-            </button>
+            >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
               className="px-5 py-2 bg-rose-600 text-white font-medium rounded-lg hover:bg-rose-700 transition disabled:opacity-50"
             >
-              {loading ? 'Updating...' : 'Update Medicine'}
+              {loading ? 'جاري الحفظ...' : 'تحديث الدواء'}
             </button>
           </div>
         </form>

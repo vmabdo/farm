@@ -21,8 +21,8 @@ export default async function CattlePage() {
     <div className="space-y-6">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Cattle Management</h1>
-          <p className="text-slate-500 mt-2">Track livestock, entry details, and weight progression.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">إدارة القطيع</h1>
+          <p className="text-slate-500 mt-2">تتبع الماشية وتفاصيل الدخول وتطور الأوزان.</p>
         </div>
       </header>
 

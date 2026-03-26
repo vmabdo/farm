@@ -8,6 +8,7 @@ import AddWorkerDialog from './AddWorkerDialog';
 import EditWorkerDialog from './EditWorkerDialog';
 import AddPayrollDialog from './AddPayrollDialog';
 import EditPayrollDialog from './EditPayrollDialog';
+import PayslipDialog from './PayslipDialog';
 
 type WorkerData = any;
 type PayrollData = any;
@@ -26,6 +27,8 @@ export default function WorkersClientView({
   const [workersSortDesc, setWorkersSortDesc] = useState<boolean>(false);
   const [isAddWorkerOpen, setIsAddWorkerOpen] = useState(false);
   const [editWorkerData, setEditWorkerData] = useState<WorkerData | null>(null);
+  const [isPayslipOpen, setIsPayslipOpen] = useState(false);
+  const [payslipWorker, setPayslipWorker] = useState<WorkerData | null>(null);
 
   // Payroll State
   const [payrollSortCol, setPayrollSortCol] = useState<string>('paymentDate');
@@ -106,14 +109,14 @@ export default function WorkersClientView({
   };
 
   const handleDeleteWorker = async (id: string) => {
-    if (confirm('Delete this worker? All their payroll history will be permanently deleted.')) {
+    if (confirm('هل أنت متأكد من حذف هذا العامل؟ سيتم حذف جميع سجلات الرواتب الخاصة به بشكل دائم.')) {
       const res = await deleteWorker(id);
       if (!res.success) alert(res.error);
     }
   };
 
   const handleDeletePayroll = async (id: string) => {
-    if (confirm('Delete this salary log?')) {
+    if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
       const res = await deletePayroll(id);
       if (!res.success) alert(res.error);
     }
@@ -122,18 +125,28 @@ export default function WorkersClientView({
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex bg-slate-200/50 p-1 rounded-xl">
+        <div className="flex bg-slate-100 p-1 rounded-xl">
           <button 
             onClick={() => setActiveTab('workers')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'workers' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-medium transition ${
+              activeTab === 'workers' 
+                ? 'bg-emerald-600 text-white shadow-sm' 
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
           >
-            Worker Directory
+            <Users className="w-4 h-4" />
+            العمال
           </button>
           <button 
             onClick={() => setActiveTab('payroll')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'payroll' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-medium transition ${
+              activeTab === 'payroll' 
+                ? 'bg-blue-600 text-white shadow-sm' 
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
           >
-            Payroll Logs
+            <Banknote className="w-4 h-4" />
+            سجل الرواتب
           </button>
         </div>
 
@@ -144,7 +157,7 @@ export default function WorkersClientView({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={activeTab === 'workers' ? 'Search workers...' : 'Search payroll...'}
+            placeholder="البحث بالاسم أو الوظيفة أو الرقم القومي..."
             className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
@@ -155,16 +168,14 @@ export default function WorkersClientView({
               onClick={() => setIsAddWorkerOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
             >
-              <Plus className="w-5 h-5" /> Add Worker
-            </button>
+              <Plus className="w-5 h-5" />إضافة عامل</button>
           )}
           {activeTab === 'payroll' && (
             <button
               onClick={() => setIsAddPayrollOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
-              <Banknote className="w-5 h-5" /> Log Payment
-            </button>
+              <Banknote className="w-5 h-5" />تسجيل دفعة</button>
           )}
         </div>
       </div>
@@ -178,12 +189,12 @@ export default function WorkersClientView({
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
                 <tr>
                   {[
-                    { label: 'Name', key: 'name' },
-                    { label: 'Job Role', key: 'role' },
-                    { label: 'Base Salary', key: 'salary' },
-                    { label: 'National ID', key: 'nationalId' },
-                    { label: 'Phone', key: 'phone' },
-                    { label: 'Status', key: 'active' },
+                    { label: 'الاسم', key: 'name' },
+                    { label: 'الوظيفة', key: 'role' },
+                    { label: 'الراتب الأساسي', key: 'salary' },
+                    { label: 'الرقم القومي', key: 'nationalId' },
+                    { label: 'الهاتف', key: 'phone' },
+                    { label: 'الحالة', key: 'active' },
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortWorkers(col.key)} className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition select-none">
                       <div className="flex items-center gap-1">
@@ -192,7 +203,7 @@ export default function WorkersClientView({
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">Actions</th>
+                  <th className="px-6 py-4 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -202,11 +213,11 @@ export default function WorkersClientView({
               <thead className="bg-blue-50/50 border-b border-blue-100 text-slate-600 font-medium">
                 <tr>
                   {[
-                    { label: 'Date', key: 'paymentDate' },
-                    { label: 'Worker Name', key: 'worker' },
-                    { label: 'Type', key: 'type' },
-                    { label: 'Amount Paid', key: 'amount' },
-                    { label: 'Notes', key: 'notes' }
+                    { label: 'التاريخ', key: 'paymentDate' },
+                    { label: 'اسم العامل', key: 'worker' },
+                    { label: 'النوع', key: 'type' },
+                    { label: 'المبلغ المدفوع', key: 'amount' },
+                    { label: 'ملاحظات', key: 'notes' }
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortPayrolls(col.key)} className="px-6 py-4 cursor-pointer hover:bg-blue-100/50 transition select-none">
                       <div className="flex items-center gap-1">
@@ -215,7 +226,7 @@ export default function WorkersClientView({
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">Actions</th>
+                  <th className="px-6 py-4 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -227,22 +238,25 @@ export default function WorkersClientView({
                 <tr key={worker.id} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Users className="w-4 h-4 text-slate-400"/> {worker.name}</td>
                   <td className="px-6 py-4 text-slate-600">{worker.role}</td>
-                  <td className="px-6 py-4 font-bold text-slate-700">EGP {worker.salary.toFixed(2)}</td>
+                  <td className="px-6 py-4 font-bold text-slate-700">ج.م {worker.salary.toFixed(2)}</td>
                   <td className="px-6 py-4 text-slate-500 font-mono text-xs tracking-wider">{worker.nationalId}</td>
                   <td className="px-6 py-4 text-slate-500">{worker.phone || '-'}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${worker.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                      {worker.active ? 'Present' : 'Inactive'}
+                      {worker.active ? 'متواجد' : 'غير متواجد'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-end">
-                    <button onClick={() => setEditWorkerData(worker)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
+                  <td className="px-6 py-4 text-end flex items-center justify-end gap-2">
+                    <button onClick={() => { setPayslipWorker(worker); setIsPayslipOpen(true); }} className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition whitespace-nowrap">
+                      كشف راتب
+                    </button>
+                    <button onClick={() => setEditWorkerData(worker)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg transition"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => handleDeleteWorker(worker.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
               {activeTab === 'workers' && filteredWorkers.length === 0 && (
-                <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">No workers found.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">لا يوجد عمال.</td></tr>
               )}
 
               {/* PAYROLL ROWS */}
@@ -256,10 +270,10 @@ export default function WorkersClientView({
                       payroll.type === 'BONUS' ? 'bg-emerald-100 text-emerald-700' :
                       'bg-amber-100 text-amber-700'
                     }`}>
-                      {payroll.type}
+                      {payroll.type === 'SALARY' ? 'راتب' : payroll.type === 'BONUS' ? 'مكافأة' : 'سلفة'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-slate-700">EGP {payroll.amount.toFixed(2)}</td>
+                  <td className="px-6 py-4 font-bold text-slate-700">ج.م {payroll.amount.toFixed(2)}</td>
                   <td className="px-6 py-4 text-slate-500 truncate max-w-xs">{payroll.notes || '-'}</td>
                   <td className="px-6 py-4 text-end">
                     <button onClick={() => setEditPayrollData(payroll)} className="p-1.5 text-slate-600 hover:bg-blue-100 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
@@ -268,7 +282,7 @@ export default function WorkersClientView({
                 </tr>
               ))}
               {activeTab === 'payroll' && filteredPayrolls.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">No payroll records logged.</td></tr>
+                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">لا يوجد سجلات رواتب.</td></tr>
               )}
 
             </tbody>
@@ -282,6 +296,17 @@ export default function WorkersClientView({
       
       <AddPayrollDialog isOpen={isAddPayrollOpen} onClose={() => setIsAddPayrollOpen(false)} workers={initialWorkers} />
       {editPayrollData && <EditPayrollDialog isOpen={!!editPayrollData} onClose={() => setEditPayrollData(null)} payroll={editPayrollData} />}
+      {payslipWorker && (
+        <PayslipDialog
+          isOpen={isPayslipOpen}
+          onClose={() => {
+            setIsPayslipOpen(false);
+            setPayslipWorker(null);
+          }}
+          worker={payslipWorker}
+          payrolls={initialPayrolls}
+        />
+      )}
     </>
   );
 }

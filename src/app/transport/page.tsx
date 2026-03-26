@@ -12,8 +12,8 @@ export default async function TransportPage() {
     <div className="space-y-6">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Transportation & Expenses</h1>
-          <p className="text-slate-500 mt-2">Log delivery vehicles, feed transport, and internal hauling expenses.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">النقل والمواصلات</h1>
+          <p className="text-slate-500 mt-2">تسجيل مركبات التوصيل، نقل الأعلاف، ومصاريف النقل الداخلي.</p>
         </div>
       </header>
 

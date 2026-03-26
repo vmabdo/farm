@@ -14,6 +14,8 @@ export async function createWorker(formData: FormData) {
   const salary = parseFloat(formData.get('salary') as string);
   const startDate = formData.get('startDate') as string;
 
+  if (salary < 0) return { success: false, error: 'Salary cannot be negative.' };
+
   try {
     await prisma.worker.create({
       data: {
@@ -45,6 +47,8 @@ export async function updateWorker(id: string, formData: FormData) {
   const salary = parseFloat(formData.get('salary') as string);
   const startDate = formData.get('startDate') as string;
   const active = formData.get('active') === 'true';
+
+  if (salary < 0) return { success: false, error: 'Salary cannot be negative.' };
 
   try {
     await prisma.worker.update({
@@ -97,6 +101,8 @@ export async function createPayroll(formData: FormData) {
   const notes = formData.get('notes') as string;
   const paymentDate = formData.get('paymentDate') as string;
 
+  if (amount <= 0) return { success: false, error: 'Payment amount must be positive.' };
+
   try {
     await prisma.payroll.create({
       data: {
@@ -121,6 +127,8 @@ export async function updatePayroll(id: string, formData: FormData) {
   const type = formData.get('type') as string;
   const notes = formData.get('notes') as string;
   const paymentDate = formData.get('paymentDate') as string;
+
+  if (amount <= 0) return { success: false, error: 'Payment amount must be positive.' };
 
   try {
     await prisma.payroll.update({

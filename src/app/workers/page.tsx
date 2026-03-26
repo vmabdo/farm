@@ -16,8 +16,8 @@ export default async function WorkersPage() {
     <div className="space-y-6">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Workers & Payroll</h1>
-          <p className="text-slate-500 mt-2">Manage employee records and track salary disbursements.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">العمال والرواتب</h1>
+          <p className="text-slate-500 mt-2">إدارة سجلات الموظفين وتتبع صرف الرواتب والسلف.</p>
         </div>
       </header>
 

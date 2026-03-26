@@ -30,7 +30,7 @@ export default function AddPayrollDialog({ isOpen, onClose, workers }: { isOpen:
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-800">Log Salary Payment</h2>
+          <h2 className="text-xl font-bold text-slate-800">تسجيل دفعة راتب</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
@@ -38,45 +38,46 @@ export default function AddPayrollDialog({ isOpen, onClose, workers }: { isOpen:
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Worker *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">العامل *</label>
             <select
               name="workerId"
               required
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
             >
-              <option value="">Select a worker...</option>
+              <option value="">اختر العامل...</option>
               {activeWorkers.map((w: any) => (
                 <option key={w.id} value={w.id}>
-                  {w.name} (Base: EGP {w.salary.toFixed(2)})
+                  {w.name} (أساسي: {w.salary.toFixed(2)} ج.م)
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Payment Type *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">نوع الدفعة *</label>
             <select
               name="type"
               required
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
             >
-              <option value="SALARY">Regular Salary</option>
-              <option value="BONUS">Bonus</option>
-              <option value="DEDUCTION">Deduction</option>
+              <option value="SALARY">راتب أساسي</option>
+              <option value="BONUS">مكافأة</option>
+              <option value="DEDUCTION">خصم أو سلفة</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Actual Amount Paid (EGP) *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">المبلغ الفعلي (ج.م) *</label>
             <input 
               name="amount" 
               type="number" 
+              min="0"
               step="0.01"
               required 
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
-              placeholder="Total amount distributed"
+              placeholder="إجمالي المبلغ المنصرف"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Payment Date *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ الدفع *</label>
             <input 
               name="paymentDate" 
               type="date"
@@ -86,12 +87,12 @@ export default function AddPayrollDialog({ isOpen, onClose, workers }: { isOpen:
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">ملاحظات</label>
             <textarea 
               name="notes"
               rows={2} 
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none" 
-              placeholder="Reasons for bonus/deduction, or specific month..."
+              placeholder="أسباب المكافأة، الخصم، أو الشهر..."
             />
           </div>
 
@@ -100,15 +101,13 @@ export default function AddPayrollDialog({ isOpen, onClose, workers }: { isOpen:
               type="button" 
               onClick={onClose}
               className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
-            >
-              Cancel
-            </button>
+            >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading || activeWorkers.length === 0}
               className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
             >
-              {loading ? 'Logging...' : 'Log Payment'}
+              {loading ? 'Logging...' : 'تسجيل دفعة'}
             </button>
           </div>
         </form>

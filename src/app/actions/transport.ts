@@ -11,6 +11,8 @@ export async function createTransportRent(formData: FormData) {
   const cost = parseFloat(formData.get('cost') as string);
   const notes = formData.get('notes') as string;
 
+  if (cost < 0) return { success: false, error: 'Cost cannot be negative.' };
+
   try {
     await prisma.transportRent.create({
       data: {
@@ -37,6 +39,8 @@ export async function updateTransportRent(id: string, formData: FormData) {
   const purpose = formData.get('purpose') as string;
   const cost = parseFloat(formData.get('cost') as string);
   const notes = formData.get('notes') as string;
+
+  if (cost < 0) return { success: false, error: 'Cost cannot be negative.' };
 
   try {
     await prisma.transportRent.update({

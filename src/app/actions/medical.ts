@@ -38,6 +38,8 @@ export async function updateMedicine(id: string, formData: FormData) {
   const unit = formData.get('unit') as string;
   const expirationDate = formData.get('expirationDate') as string;
 
+  if (currentStock < 0) return { success: false, error: 'Stock cannot be negative.' };
+
   try {
     await prisma.medicine.update({
       where: { id },
@@ -83,8 +85,14 @@ export async function createMedicalRecord(formData: FormData) {
   const type = formData.get('type') as string;
   const notes = formData.get('notes') as string;
 
+  if (dose <= 0) return { success: false, error: 'Dose must be a positive number.' };
+
   try {
     await prisma.$transaction(async (tx) => {
+      const medicineItem = await tx.medicine.findUnique({ where: { id: medicineId } });
+      if (!medicineItem) throw new Error('Medicine not found.');
+      if (medicineItem.currentStock < dose) throw new Error(`Not enough medicine stock. Available: ${medicineItem.currentStock.toFixed(2)} ${medicineItem.unit}`);
+
       await tx.medicalRecord.create({
         data: {
           cattleId,
@@ -121,6 +129,8 @@ export async function updateMedicalRecord(id: string, formData: FormData) {
   const type = formData.get('type') as string;
   const notes = formData.get('notes') as string;
 
+  if (dose <= 0) return { success: false, error: 'Dose must be a positive number.' };
+
   try {
     await prisma.$transaction(async (tx) => {
       const oldRecord = await tx.medicalRecord.findUnique({ where: { id } });
@@ -128,7 +138,11 @@ export async function updateMedicalRecord(id: string, formData: FormData) {
 
       // Revert old dose, apply new dose
       if (oldRecord.medicineId !== medicineId) {
-        // Medicine changed, revert old completely, deduct full new
+        // Medicine changed
+        const newMedicineItem = await tx.medicine.findUnique({ where: { id: medicineId } });
+        if (!newMedicineItem) throw new Error('New medicine not found.');
+        if (newMedicineItem.currentStock < dose) throw new Error(`Not enough medicine stock. Available: ${newMedicineItem.currentStock.toFixed(2)} ${newMedicineItem.unit}`);
+
         await tx.medicine.update({
           where: { id: oldRecord.medicineId },
           data: { currentStock: { increment: oldRecord.dose } }
@@ -140,6 +154,10 @@ export async function updateMedicalRecord(id: string, formData: FormData) {
       } else {
         // Same medicine, difference in dose
         const diff = dose - oldRecord.dose;
+        if (diff > 0) {
+          const medItem = await tx.medicine.findUnique({ where: { id: medicineId }});
+          if (!medItem || medItem.currentStock < diff) throw new Error(`Not enough medicine stock. Need ${diff.toFixed(2)} more, but only ${medItem?.currentStock.toFixed(2) || 0} available.`);
+        }
         await tx.medicine.update({
           where: { id: medicineId },
           data: { currentStock: { decrement: diff } }

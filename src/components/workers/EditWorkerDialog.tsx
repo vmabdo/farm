@@ -27,7 +27,7 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-800">Edit Worker Info</h2>
+          <h2 className="text-xl font-bold text-slate-800">تعديل بيانات العامل</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
@@ -35,7 +35,7 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الاسم بالكامل *</label>
             <input 
               name="name" 
               required 
@@ -44,7 +44,7 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">National ID *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الرقم القومي *</label>
             <input 
               name="nationalId" 
               required 
@@ -53,7 +53,7 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Job Role *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الوظيفة *</label>
             <input 
               name="role" 
               required 
@@ -62,10 +62,11 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Base Salary (EGP) *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الراتب الأساسي (ج.م) *</label>
             <input 
               name="salary" 
               type="number" 
+              min="0"
               step="0.01"
               required 
               defaultValue={worker.salary}
@@ -73,7 +74,7 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">رقم الهاتف</label>
             <input 
               name="phone" 
               defaultValue={worker.phone || ''}
@@ -81,7 +82,7 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Start Date *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ البدء *</label>
             <input 
               name="startDate" 
               type="date" 
@@ -100,7 +101,7 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
               defaultChecked={worker.active}
               className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" 
             />
-            <label htmlFor="active" className="text-sm font-medium text-slate-700">Present (Active Employee)</label>
+            <label htmlFor="active" className="text-sm font-medium text-slate-700">متواجد (عامل نشط)</label>
           </div>
 
           <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100">
@@ -108,15 +109,13 @@ export default function EditWorkerDialog({ isOpen, onClose, worker }: { isOpen: 
               type="button" 
               onClick={onClose}
               className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
-            >
-              Cancel
-            </button>
+            >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
               className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
             >
-              {loading ? 'Updating...' : 'Update Worker'}
+              {loading ? 'جاري الحفظ...' : 'تحديث بيانات العامل'}
             </button>
           </div>
         </form>

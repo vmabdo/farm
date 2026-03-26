@@ -60,7 +60,7 @@ export default function TransportClientView({
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Delete this transport expense record permanently?')) {
+    if (confirm('هل أنت متأكد من حذف سجل النقل هذا بشكل دائم؟')) {
       const res = await deleteTransportRent(id);
       if (!res.success) alert(res.error);
     }
@@ -76,7 +76,7 @@ export default function TransportClientView({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search transport..."
+            placeholder="البحث في سجل النقل..."
             className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
           />
         </div>
@@ -84,8 +84,7 @@ export default function TransportClientView({
           onClick={() => setIsAddOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
         >
-          <Plus className="w-5 h-5" /> Log Transport
-        </button>
+          <Plus className="w-5 h-5" />تسجيل مركبة ناقلة</button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -94,12 +93,12 @@ export default function TransportClientView({
             <thead className="bg-blue-50/50 border-b border-blue-100 text-slate-600 font-medium">
               <tr>
                 {[
-                  { label: 'Date', key: 'travelDate' },
-                  { label: 'Driver', key: 'driverName' },
-                  { label: 'Vehicle', key: 'vehicleType' },
-                  { label: 'Purpose', key: 'purpose' },
-                  { label: 'Cost (EGP)', key: 'cost' },
-                  { label: 'Notes', key: 'notes' }
+                  { label: 'التاريخ', key: 'travelDate' },
+                  { label: 'اسم السائق', key: 'driverName' },
+                  { label: 'نوع المركبة', key: 'vehicleType' },
+                  { label: 'الغرض', key: 'purpose' },
+                  { label: 'التكلفة (ج.م)', key: 'cost' },
+                  { label: 'ملاحظات', key: 'notes' }
                 ].map((col) => (
                   <th key={col.key} onClick={() => handleSort(col.key)} className="px-6 py-4 cursor-pointer hover:bg-blue-100/50 transition select-none">
                     <div className="flex items-center gap-1">
@@ -108,7 +107,7 @@ export default function TransportClientView({
                     </div>
                   </th>
                 ))}
-                <th className="px-6 py-4 text-end">Actions</th>
+                <th className="px-6 py-4 text-end">الإجراءات</th>
               </tr>
             </thead>
 
@@ -119,7 +118,7 @@ export default function TransportClientView({
                   <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Truck className="w-4 h-4 text-slate-400"/> {log.driverName || '-'}</td>
                   <td className="px-6 py-4 text-slate-700">{log.vehicleType}</td>
                   <td className="px-6 py-4 text-slate-600">{log.purpose}</td>
-                  <td className="px-6 py-4 font-bold text-slate-800">EGP {log.cost.toFixed(2)}</td>
+                  <td className="px-6 py-4 font-bold text-slate-800">ج.م {log.cost.toFixed(2)}</td>
                   <td className="px-6 py-4 text-slate-500 truncate max-w-xs">{log.notes || '-'}</td>
                   <td className="px-6 py-4 text-end">
                     <button onClick={() => setEditData(log)} className="p-1.5 text-slate-600 hover:bg-blue-100 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
@@ -128,7 +127,7 @@ export default function TransportClientView({
                 </tr>
               ))}
               {filteredTransports.length === 0 && (
-                <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">No transport records logged.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">لا يوجد سجلات نقل.</td></tr>
               )}
             </tbody>
           </table>

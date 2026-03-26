@@ -42,6 +42,7 @@ model FeedItem {
   type         String
   currentStock Float    @default(0)
   unit         String   // KG, TON, BAG
+  dailyPrice   Float    @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -140,4 +141,29 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// 6. Equipment & Machinery
+model Equipment {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   // TRACTOR, LOADER, GENERATOR, OTHER
+  status    String   @default("ACTIVE") // ACTIVE, MAINTENANCE, OUT_OF_SERVICE
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 7. Invoices & Reports
+model Invoice {
+  id          String   @id @default(cuid())
+  clientName  String
+  invoiceDate DateTime @default(now())
+  totalAmount Float
+  discount    Float    @default(0)
+  netAmount   Float
+  items       String   // JSON string of invoice items
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

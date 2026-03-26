@@ -22,6 +22,9 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
   const [weightCattleData, setWeightCattleData] = useState<CattleData | null>(null);
   const [isWeightOpen, setIsWeightOpen] = useState(false);
   const [search, setSearch] = useState('');
+  
+  const [activeTab, setActiveTab] = useState<'ACTIVE' | 'SOLD' | 'DECEASED'>('ACTIVE');
+  const [prices, setPrices] = useState<Record<string, number>>({});
 
   // Derive sorted data from rawData on the fly
   const sortedData = useMemo(() => {
@@ -50,14 +53,16 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
   }, [rawData, sortCol, sortDesc]);
 
   const filteredData = useMemo(() => {
+    let base = sortedData.filter(c => c.status === activeTab);
+    
     const q = search.toLowerCase().trim();
-    if (!q) return sortedData;
-    return sortedData.filter((c) =>
-      [c.tagNumber, c.breed, c.status]
+    if (!q) return base;
+    return base.filter((c) =>
+      [c.tagNumber, c.breed]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q))
     );
-  }, [sortedData, search]);
+  }, [sortedData, search, activeTab]);
 
   const sortBy = (col: string) => {
     if (sortCol === col) {
@@ -69,7 +74,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this record? All associated data will be removed.')) {
+    if (confirm('هل أنت متأكد من حذف هذا السجل؟ سيتم مسح جميع البيانات المرتبطة به.')) {
       const res = await deleteCattle(id);
       if (!res.success) {
         alert(res.error);
@@ -89,7 +94,22 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex gap-2 bg-slate-200/50 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
+          {['ACTIVE', 'SOLD', 'DECEASED'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+                activeTab === tab
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+              }`}
+            >
+              {tab === 'ACTIVE' ? 'القطيع النشط' : tab === 'SOLD' ? 'المباع' : 'النافق'}
+            </button>
+          ))}
+        </div>
         {/* Search */}
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -97,7 +117,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search cattle..."
+            placeholder="البحث عن القطيع..."
             className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
@@ -106,7 +126,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
           className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />
-          Add Cattle
+          إضافة عجل
         </button>
       </div>
 
@@ -116,13 +136,14 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
               <tr>
                 {[
-                  { label: 'Tag Number', key: 'tagNumber' },
-                  { label: 'Breed', key: 'breed' },
-                  { label: 'Entry Date', key: 'entryDate' },
-                  { label: 'Init. Wt(kg)', key: 'entryWeight' },
-                  { label: 'Curr. Wt(kg)', key: 'currentWeight' },
-                  { label: 'Latest Diff(kg)', key: 'weights' }, // custom sort
-                  { label: 'Status', key: 'status' }
+                  { label: 'رقم البطاقة', key: 'tagNumber' },
+                  { label: 'السلالة', key: 'breed' },
+                  { label: 'تاريخ الدخول', key: 'entryDate' },
+                  { label: 'الوزن المبدئي (كجم)', key: 'entryWeight' },
+                  { label: 'الوزن الحالي (كجم)', key: 'currentWeight' },
+                  { label: 'آخر فرق (كجم)', key: 'weights' }, // custom sort
+                  { label: 'التقييم (السعر/كجم)', key: 'val' },
+                  { label: 'الحالة', key: 'status' }
                 ].map((col) => (
                   <th
                     key={col.key}
@@ -137,7 +158,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
                     </div>
                   </th>
                 ))}
-                <th className="px-6 py-4 text-end">Actions</th>
+                <th className="px-6 py-4 text-end">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -154,6 +175,22 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
                     <td className="px-6 py-4 font-medium text-slate-800">{cattle.currentWeight?.toFixed(2) || '-'}</td>
                     <td className={`px-6 py-4 font-medium ${diffColor}`}>
                       {diff > 0 ? '+' : ''}{diff.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={prices[cattle.id] || ''}
+                          onChange={(e) => setPrices(prev => ({ ...prev, [cattle.id]: parseFloat(e.target.value) }))}
+                          className="w-20 px-2 py-1 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-emerald-500"
+                        />
+                        <span className="font-semibold text-slate-700">
+                          = ج.م {((prices[cattle.id] || 0) * (cattle.currentWeight || cattle.entryWeight)).toFixed(2)}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${

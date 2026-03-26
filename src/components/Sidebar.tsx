@@ -1,24 +1,24 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChartLine, Wheat, Users, Syringe, Truck, LayoutDashboard, Settings, Languages, X } from 'lucide-react';
+import { ChartLine, Wheat, Users, Syringe, Truck, LayoutDashboard, Settings, X, Wrench, Receipt } from 'lucide-react';
 import LogoutButton from './LogoutButton';
-import { useLanguage } from './LanguageContext';
 import { useSidebar } from './SidebarContext';
 
 const navItems = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Cattle & Weights', href: '/cattle', icon: ChartLine },
-  { name: 'Feed & Inventory', href: '/feed', icon: Wheat },
-  { name: 'Workers & Payroll', href: '/workers', icon: Users },
-  { name: 'Medical Care', href: '/medical', icon: Syringe },
-  { name: 'Transport & Expenses', href: '/transport', icon: Truck },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'لوحة القيادة', href: '/', icon: LayoutDashboard },
+  { name: 'القطيع والأوزان', href: '/cattle', icon: ChartLine },
+  { name: 'الأعلاف والمخزون', href: '/feed', icon: Wheat },
+  { name: 'العمال والرواتب', href: '/workers', icon: Users },
+  { name: 'الرعاية الطبية', href: '/medical', icon: Syringe },
+  { name: 'النقل والمصروفات', href: '/transport', icon: Truck },
+  { name: 'المعدات والآلات', href: '/equipment', icon: Wrench },
+  { name: 'الفواتير والتقارير', href: '/invoices', icon: Receipt },
+  { name: 'الإعدادات', href: '/settings', icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { language, toggleLanguage, t } = useLanguage();
   const { isOpen, close } = useSidebar();
 
   if (pathname === '/login') return null;
@@ -39,7 +39,7 @@ export default function Sidebar() {
         className={`
           fixed top-0 start-0 h-full w-64 z-40
           bg-slate-900 border-e border-slate-800
-          flex flex-col text-white
+          flex flex-col text-white print:hidden
           transition-transform duration-300 ease-in-out
           md:relative md:z-auto md:flex-shrink-0
           ${isOpen
@@ -55,14 +55,6 @@ export default function Sidebar() {
             Farm ERP
           </h1>
           <div className="flex items-center gap-1">
-            <button
-              onClick={toggleLanguage}
-              className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition text-xs font-bold flex items-center gap-1"
-              title="Toggle Language"
-            >
-              <Languages className="w-3.5 h-3.5" />
-              {language === 'ar' ? 'EN' : 'AR'}
-            </button>
             {/* Close button — mobile only */}
             <button
               onClick={close}
@@ -76,31 +68,36 @@ export default function Sidebar() {
 
         {/* Nav links */}
         <nav className="flex-1 overflow-y-auto py-4 flex flex-col gap-1 px-3">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={close} // auto-close on mobile after navigation
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  isActive
-                    ? 'bg-slate-800 text-emerald-400 font-semibold'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                <item.icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
-                <span className="whitespace-nowrap">{t(item.name)}</span>
-              </Link>
-            );
-          })}
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={close}
+                  className={`
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                    ${isActive
+                      ? 'bg-emerald-500/10 text-emerald-400'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    }
+                  `}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         {/* Footer */}
         <div className="p-4 flex flex-col gap-2 border-t border-slate-800 text-sm text-slate-500 flex-shrink-0">
           <LogoutButton />
           <div className="mt-1 ps-1 border-t border-slate-800/50 pt-2 text-xs">
-            <p>Premium Feedlot System</p>
+            <p>نظام إدارة التسمين المتميز</p>
             <p>&copy; {new Date().getFullYear()} Farm ERP</p>
           </div>
         </div>

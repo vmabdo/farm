@@ -117,14 +117,14 @@ export default function MedicalClientView({
   };
 
   const handleDeleteMedicine = async (id: string) => {
-    if (confirm('Delete this medicine? This will permanently delete all associated medical treatment logs.')) {
+    if (confirm('هل أنت متأكد من حذف هذا الدواء؟ سيتم حذف جميع العلاجات المرتبطة به بشكل دائم.')) {
       const res = await deleteMedicine(id);
       if (!res.success) alert(res.error);
     }
   };
 
   const handleDeleteRecord = async (id: string) => {
-    if (confirm('Delete this treatment record? (The dose will be added back to the inventory).')) {
+    if (confirm('هل أنت متأكد من حذف هذا السجل العلاجي؟ (سيتم إرجاع الجرعة إلى المخزون).')) {
       const res = await deleteMedicalRecord(id);
       if (!res.success) alert(res.error);
     }
@@ -138,13 +138,13 @@ export default function MedicalClientView({
             onClick={() => setActiveTab('inventory')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'inventory' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
-            Medicine Inventory
+            مخزون الأدوية
           </button>
           <button 
             onClick={() => setActiveTab('records')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'records' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
-            Treatment Logs
+            سجل العلاجات
           </button>
         </div>
 
@@ -155,7 +155,7 @@ export default function MedicalClientView({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={activeTab === 'inventory' ? 'Search medicines...' : 'Search treatments...'}
+            placeholder="البحث بالأسم أو المورد أو الوحدة..."
             className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
@@ -166,16 +166,14 @@ export default function MedicalClientView({
               onClick={() => setIsAddMedOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
             >
-              <Plus className="w-5 h-5" /> Add Medicine
-            </button>
+              <Plus className="w-5 h-5" />إضافة دواء</button>
           )}
           {activeTab === 'records' && (
             <button
               onClick={() => setIsAddRecOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"
             >
-              <HeartPulse className="w-5 h-5" /> Log Treatment
-            </button>
+              <HeartPulse className="w-5 h-5" />تسجيل علاج</button>
           )}
         </div>
       </div>
@@ -189,11 +187,11 @@ export default function MedicalClientView({
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
                 <tr>
                   {[
-                    { label: 'Medicine Name', key: 'name' },
-                    { label: 'Supplier', key: 'supplier' },
-                    { label: 'Current Stock', key: 'currentStock' },
-                    { label: 'Unit', key: 'unit' },
-                    { label: 'Expiration', key: 'expirationDate' },
+                    { label: 'اسم الدواء', key: 'name' },
+                    { label: 'المورد / الشركة', key: 'supplier' },
+                    { label: 'المخزون الحالي', key: 'currentStock' },
+                    { label: 'الوحدة', key: 'unit' },
+                    { label: 'تاريخ الصلاحية', key: 'expirationDate' },
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortMeds(col.key)} className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition select-none">
                       <div className="flex items-center gap-1">
@@ -202,7 +200,7 @@ export default function MedicalClientView({
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">Actions</th>
+                  <th className="px-6 py-4 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -212,12 +210,12 @@ export default function MedicalClientView({
               <thead className="bg-rose-50/50 border-b border-rose-100 text-slate-600 font-medium">
                 <tr>
                   {[
-                    { label: 'Date', key: 'treatmentDate' },
-                    { label: 'Cattle Tag', key: 'cattle' },
-                    { label: 'Medicine', key: 'medicine' },
-                    { label: 'Type', key: 'type' },
-                    { label: 'Dose Given', key: 'dose' },
-                    { label: 'Notes', key: 'notes' }
+                    { label: 'التاريخ', key: 'treatmentDate' },
+                    { label: 'رقم الحيوان', key: 'cattle' },
+                    { label: 'اسم الدواء', key: 'medicine' },
+                    { label: 'النوع', key: 'type' },
+                    { label: 'الجرعة المعطاة', key: 'dose' },
+                    { label: 'ملاحظات', key: 'notes' }
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortRecs(col.key)} className="px-6 py-4 cursor-pointer hover:bg-rose-100/50 transition select-none">
                       <div className="flex items-center gap-1">
@@ -226,7 +224,7 @@ export default function MedicalClientView({
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">Actions</th>
+                  <th className="px-6 py-4 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -250,7 +248,7 @@ export default function MedicalClientView({
                 </tr>
               ))}
               {activeTab === 'inventory' && filteredMedicines.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">No medical inventory found.</td></tr>
+                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">لا يوجد مخزون أدوية.</td></tr>
               )}
 
               {/* RECORD ROWS */}
@@ -269,7 +267,7 @@ export default function MedicalClientView({
                 </tr>
               ))}
               {activeTab === 'records' && filteredRecords.length === 0 && (
-                <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">No treatment records logged.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-500">لا توجد سجلات علاج.</td></tr>
               )}
 
             </tbody>

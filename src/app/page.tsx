@@ -18,18 +18,18 @@ export default async function Home() {
   const pendingMedical = await prisma.medicalRecord.count();
 
   const stats = [
-    { name: 'Total Cattle', value: cattleCount.toString(), icon: ChartLine, color: 'text-emerald-500', bg: 'bg-emerald-100' },
-    { name: 'Feed Stock Items', value: feedStock.toString(), icon: Wheat, color: 'text-amber-500', bg: 'bg-amber-100' },
-    { name: 'Active Workers', value: activeWorkers.toString(), icon: Users, color: 'text-blue-500', bg: 'bg-blue-100' },
-    { name: 'Medical Records', value: pendingMedical.toString(), icon: Syringe, color: 'text-rose-500', bg: 'bg-rose-100' },
-    { name: 'Transport Rents', value: transportCount.toString(), icon: Truck, color: 'text-indigo-500', bg: 'bg-indigo-100' },
+    { name: 'إجمالي القطيع', value: cattleCount.toString(), icon: ChartLine, color: 'text-emerald-500', bg: 'bg-emerald-100' },
+    { name: 'مواد العلف', value: feedStock.toString(), icon: Wheat, color: 'text-amber-500', bg: 'bg-amber-100' },
+    { name: 'العمال النشطين', value: activeWorkers.toString(), icon: Users, color: 'text-blue-500', bg: 'bg-blue-100' },
+    { name: 'السجلات الطبية', value: pendingMedical.toString(), icon: Syringe, color: 'text-rose-500', bg: 'bg-rose-100' },
+    { name: 'عمليات النقل', value: transportCount.toString(), icon: Truck, color: 'text-indigo-500', bg: 'bg-indigo-100' },
   ];
 
   return (
     <div className="space-y-6">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard Overview</h1>
-        <p className="text-slate-500 mt-2">Welcome to the Premium Cattle Feedlot ERP System</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">نظرة عامة</h1>
+        <p className="text-slate-500 mt-2">مرحباً بك في نظام إدارة المزرعة المتكامل</p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">

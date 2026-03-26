@@ -9,6 +9,8 @@ export async function createCattle(formData: FormData) {
   const entryDate = formData.get('entryDate') as string;
   const entryWeight = parseFloat(formData.get('entryWeight') as string);
 
+  if (entryWeight < 0) return { success: false, error: 'Weight cannot be negative' };
+
   try {
     const cattle = await prisma.cattle.create({
       data: {
@@ -91,6 +93,7 @@ export async function addWeightRecord(cattleId: string, formData: FormData) {
   if (!weightStr) return { success: false, error: 'Weight is required' };
 
   const weight = parseFloat(weightStr);
+  if (weight < 0) return { success: false, error: 'Weight cannot be negative' };
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -105,10 +108,10 @@ export async function addWeightRecord(cattleId: string, formData: FormData) {
       });
 
       // 2. We should update the Cattle's currentWeight to the LATEST weight by date
-      // Find the latest weight record for this cattle
+      // Find the latest weight record for this cattle, using id to break ties
       const latestWeightRecord = await tx.weightRecord.findFirst({
         where: { cattleId },
-        orderBy: { date: 'desc' },
+        orderBy: [{ date: 'desc' }, { id: 'desc' }],
       });
 
       if (latestWeightRecord) {

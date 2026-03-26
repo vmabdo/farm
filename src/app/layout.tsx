@@ -14,12 +14,11 @@ const geistMono = Geist_Mono({
 
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
-import { LanguageProvider } from '@/components/LanguageContext';
 import { SidebarProvider } from "@/components/SidebarContext";
 
 export const metadata: Metadata = {
-  title: "Feedlot ERP",
-  description: "Premium Cattle & Calves Feedlot Management System",
+  title: "نظام إدارة المزرعة",
+  description: "نظام متكامل لإدارة عجول التسمين",
 };
 
 export default function RootLayout({
@@ -28,11 +27,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden flex flex-col bg-slate-50 text-slate-900`}
       >
-        <LanguageProvider>
           <SidebarProvider>
             {/* Top header bar (hamburger + title) */}
             <TopBar />
@@ -48,7 +46,6 @@ export default function RootLayout({
               </main>
             </div>
           </SidebarProvider>
-        </LanguageProvider>
       </body>
     </html>
   );

@@ -141,14 +141,14 @@ export default function FeedClientView({
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (confirm('Delete this feed item? All related orders and consumption logs will be securely deleted.')) {
+    if (confirm('هل أنت متأكد من حذف هذا العلف؟ سيتم مسح جميع الطلبات والاستهلاك المرتبط به.')) {
       const res = await deleteFeedItem(id);
       if (!res.success) alert(res.error);
     }
   };
 
   const handleDeleteOrder = async (id: string) => {
-    if (confirm('Delete this order? Inventory stock will be DECREASED accurately.')) {
+    if (confirm('هل أنت متأكد من حذف هذا الطلب؟ سيتم تقليل المخزون وفقاً لذلك.')) {
       const res = await deleteFeedOrder(id);
       if (!res.success) alert(res.error);
     }
@@ -169,19 +169,19 @@ export default function FeedClientView({
             onClick={() => setActiveTab('inventory')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'inventory' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
-            Inventory Stock
+            المخزون المتوفر
           </button>
           <button 
             onClick={() => setActiveTab('orders')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
-            Feed Orders
+            طلبات الشراء
           </button>
           <button 
             onClick={() => setActiveTab('consumption')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'consumption' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
-            Consumption Logs
+            سجلات الاستهلاك
           </button>
         </div>
 
@@ -192,7 +192,7 @@ export default function FeedClientView({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search feed..."
+            placeholder="البحث في الأعلاف..."
             className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
@@ -203,7 +203,7 @@ export default function FeedClientView({
               onClick={() => setIsAddItemOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
             >
-              <Plus className="w-5 h-5" /> Add Feed Type
+              <Plus className="w-5 h-5" /> إضافة نوع علف
             </button>
           )}
           {activeTab === 'orders' && (
@@ -211,7 +211,7 @@ export default function FeedClientView({
               onClick={() => setIsAddOrderOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
             >
-              <TrendingUp className="w-5 h-5" /> Receive Order
+              <TrendingUp className="w-5 h-5" /> تسجيل طلب
             </button>
           )}
           {activeTab === 'consumption' && (
@@ -219,8 +219,7 @@ export default function FeedClientView({
               onClick={() => setIsAddConsOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
             >
-              <TrendingDown className="w-5 h-5" /> Log Consumption
-            </button>
+              <TrendingDown className="w-5 h-5" />سجل الاستهلاك</button>
           )}
         </div>
       </div>
@@ -234,10 +233,11 @@ export default function FeedClientView({
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
                 <tr>
                   {[
-                    { label: 'Feed Name', key: 'name' },
-                    { label: 'Type', key: 'type' },
-                    { label: 'Current Stock', key: 'currentStock' },
-                    { label: 'Unit', key: 'unit' },
+                    { label: 'اسم العلف', key: 'name' },
+                    { label: 'الفئة', key: 'type' },
+                    { label: 'المخزون الحالي', key: 'currentStock' },
+                    { label: 'الوحدة', key: 'unit' },
+                    { label: 'سعر اليوم (ج.م)', key: 'dailyPrice' },
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortItems(col.key)} className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition select-none">
                       <div className="flex items-center gap-1">
@@ -246,7 +246,7 @@ export default function FeedClientView({
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">Actions</th>
+                  <th className="px-6 py-4 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -256,11 +256,11 @@ export default function FeedClientView({
               <thead className="bg-indigo-50/50 border-b border-indigo-100 text-slate-600 font-medium">
                 <tr>
                   {[
-                    { label: 'Date', key: 'orderDate' },
-                    { label: 'Feed Name', key: 'feedItem' },
-                    { label: 'Quantity Added', key: 'quantity' },
-                    { label: 'Cost (EGP)', key: 'cost' },
-                    { label: 'Supplier', key: 'supplier' }
+                    { label: 'التاريخ', key: 'orderDate' },
+                    { label: 'اسم العلف', key: 'feedItem' },
+                    { label: 'الكمية المضافة', key: 'quantity' },
+                    { label: 'التكلفة (ج.م)', key: 'cost' },
+                    { label: 'المورد', key: 'supplier' }
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortOrders(col.key)} className="px-6 py-4 cursor-pointer hover:bg-indigo-100/50 transition select-none">
                       <div className="flex items-center gap-1">
@@ -269,7 +269,7 @@ export default function FeedClientView({
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">Actions</th>
+                  <th className="px-6 py-4 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -279,10 +279,10 @@ export default function FeedClientView({
               <thead className="bg-amber-50/50 border-b border-amber-100 text-slate-600 font-medium">
                 <tr>
                   {[
-                    { label: 'Date', key: 'date' },
-                    { label: 'Feed Name', key: 'feedItem' },
-                    { label: 'Quantity Used', key: 'quantity' },
-                    { label: 'Notes', key: 'notes' }
+                    { label: 'التاريخ', key: 'date' },
+                    { label: 'اسم العلف', key: 'feedItem' },
+                    { label: 'الكمية المستهلكة', key: 'quantity' },
+                    { label: 'ملاحظات', key: 'notes' }
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortCons(col.key)} className="px-6 py-4 cursor-pointer hover:bg-amber-100/50 transition select-none">
                       <div className="flex items-center gap-1">
@@ -291,7 +291,7 @@ export default function FeedClientView({
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">Actions</th>
+                  <th className="px-6 py-4 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -305,6 +305,7 @@ export default function FeedClientView({
                   <td className="px-6 py-4 text-slate-600">{item.type}</td>
                   <td className="px-6 py-4 font-bold text-emerald-600">{item.currentStock.toFixed(2)}</td>
                   <td className="px-6 py-4 text-slate-500">{item.unit}</td>
+                  <td className="px-6 py-4 font-medium text-slate-600">{item.dailyPrice ? `ج.م ${item.dailyPrice.toFixed(2)}` : '-'}</td>
                   <td className="px-6 py-4 text-end">
                     <button onClick={() => setEditItemData(item)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
@@ -312,7 +313,7 @@ export default function FeedClientView({
                 </tr>
               ))}
               {activeTab === 'inventory' && filteredItems.length === 0 && (
-                <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No feed items found. Add some to get started!</td></tr>
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">لا توجد مواد علف مضافة.</td></tr>
               )}
 
               {/* ORDERS ROWS */}
@@ -321,7 +322,7 @@ export default function FeedClientView({
                   <td className="px-6 py-4 text-slate-600">{new Date(order.orderDate).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-medium text-slate-900">{order.feedItem.name}</td>
                   <td className="px-6 py-4 font-semibold text-indigo-600">+{order.quantity.toFixed(2)} {order.feedItem.unit}</td>
-                  <td className="px-6 py-4 text-slate-600">EGP {order.cost.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-slate-600">ج.م {order.cost.toFixed(2)}</td>
                   <td className="px-6 py-4 text-slate-500">{order.supplier || '-'}</td>
                   <td className="px-6 py-4 text-end">
                     <button onClick={() => setEditOrderData(order)} className="p-1.5 text-slate-600 hover:bg-indigo-100 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
@@ -330,7 +331,7 @@ export default function FeedClientView({
                 </tr>
               ))}
               {activeTab === 'orders' && filteredOrders.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">No feed orders logged.</td></tr>
+                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">لا توجد طلبات علف مسجلة.</td></tr>
               )}
 
               {/* CONSUMPTION ROWS */}
@@ -347,7 +348,7 @@ export default function FeedClientView({
                 </tr>
               ))}
               {activeTab === 'consumption' && filteredConsumptions.length === 0 && (
-                <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No feed consumption logged.</td></tr>
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">لا يوجد استهلاك علف مسجل.</td></tr>
               )}
 
             </tbody>

@@ -27,7 +27,7 @@ export default function EditConsumptionDialog({ isOpen, onClose, consumption }: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-800">Edit Feed Consumption</h2>
+          <h2 className="text-xl font-bold text-slate-800">تعديل سجل الاستهلاك</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
@@ -35,7 +35,7 @@ export default function EditConsumptionDialog({ isOpen, onClose, consumption }: 
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Feed Type</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">نوع العلف</label>
             <input 
               disabled
               value={`${consumption.feedItem.name} (${consumption.feedItem.unit})`}
@@ -43,10 +43,11 @@ export default function EditConsumptionDialog({ isOpen, onClose, consumption }: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Quantity Consumed *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">الكمية المستهلكة *</label>
             <input 
               name="quantity" 
               type="number" 
+              min="0"
               step="0.01"
               required 
               defaultValue={consumption.quantity}
@@ -54,7 +55,7 @@ export default function EditConsumptionDialog({ isOpen, onClose, consumption }: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Consumption Date *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ الاستهلاك *</label>
             <input 
               name="date" 
               type="date"
@@ -64,7 +65,7 @@ export default function EditConsumptionDialog({ isOpen, onClose, consumption }: 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">ملاحظات</label>
             <textarea 
               name="notes"
               rows={2} 
@@ -78,15 +79,13 @@ export default function EditConsumptionDialog({ isOpen, onClose, consumption }: 
               type="button" 
               onClick={onClose}
               className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
-            >
-              Cancel
-            </button>
+            >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
               className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
             >
-              {loading ? 'Updating...' : 'Update Consumption'}
+              {loading ? 'جاري التحديث...' : 'تحديث سجل الاستهلاك'}
             </button>
           </div>
         </form>
