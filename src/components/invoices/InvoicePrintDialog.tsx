@@ -12,13 +12,12 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
     items = [];
   }
 
-  // Generate random invoice ID for the UI based on DB CUID
-  const invoiceNumber = `INV-${invoice.id.substring(invoice.id.length - 6).toUpperCase()}`;
+  const invoiceNumber = invoice.serialNumber ? `#INV-${invoice.serialNumber}` : `INV-${invoice.id.substring(invoice.id.length - 6).toUpperCase()}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4 print:p-0 print:bg-white overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 backdrop-blur-sm p-4 sm:p-8 print:p-0 print:bg-white print:overflow-visible">
       {/* Container - takes full width on print */}
-      <div className="bg-white rounded-none sm:rounded-2xl shadow-xl w-full max-w-4xl min-h-screen sm:min-h-[85vh] flex flex-col relative print:shadow-none print:w-full print:absolute print:inset-0" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-auto relative print:m-0 print:shadow-none print:w-full print:absolute print:inset-0 print:rounded-none flex flex-col" onClick={(e) => e.stopPropagation()}>
         
         {/* Print-hidden header */}
         <div className="flex justify-between items-center p-4 border-b border-slate-100 print:hidden bg-slate-50 sticky top-0 z-10">
@@ -48,7 +47,7 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
             </div>
             <div className="text-right">
               <h2 className="text-4xl font-black text-slate-200 tracking-widest uppercase mb-2">فاتورة</h2>
-              <p className="text-sm text-slate-600 font-bold">رقم {invoiceNumber}</p>
+              <p className="text-lg text-slate-600 font-bold">{invoiceNumber}</p>
               <p className="text-sm text-slate-600">التاريخ: {new Date(invoice.invoiceDate).toLocaleDateString()}</p>
             </div>
           </div>

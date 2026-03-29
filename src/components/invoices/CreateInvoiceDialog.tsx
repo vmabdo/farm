@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createInvoice } from '@/app/actions/invoices';
 import { X, Plus, Trash2 } from 'lucide-react';
 
-export default function CreateInvoiceDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { isOpen: boolean; onClose: () => void; cattle?: any[] }) {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([{ name: '', quantity: 1, price: 0 }]);
   const [discount, setDiscount] = useState(0);
@@ -93,13 +93,30 @@ export default function CreateInvoiceDialog({ isOpen, onClose }: { isOpen: boole
                 {items.map((item, idx) => (
                   <div key={idx} className="flex gap-3 items-start">
                     <div className="flex-1">
-                      <input 
-                        placeholder="وصف العنصر" 
+                      <select 
                         value={item.name} 
-                        onChange={(e) => handleChange(idx, 'name', e.target.value)} 
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500" 
+                        onChange={(e) => {
+                          const tag = e.target.value;
+                          const calf = cattle?.find(c => c.tagNumber === tag);
+                          const newItems = [...items];
+                          newItems[idx].name = tag;
+                          if (calf) {
+                            const pricePerKg = calf.breed?.pricePerKg || 0;
+                            const weight = calf.currentWeight || calf.entryWeight || 0;
+                            newItems[idx].price = parseFloat((pricePerKg * weight).toFixed(2));
+                          }
+                          setItems(newItems);
+                        }} 
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 bg-white" 
                         required
-                      />
+                      >
+                        <option value="">اختر العجل...</option>
+                        {cattle?.map(c => (
+                          <option key={c.id} value={c.tagNumber}>
+                            عجل {c.tagNumber} {c.breed?.name ? `(${c.breed.name})` : ''} - {(c.currentWeight || c.entryWeight).toFixed(2)} كجم
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="w-24">
                       <input 

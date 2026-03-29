@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Scale, Search } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Scale, Search, List, Settings } from 'lucide-react';
 import { deleteCattle } from '@/app/actions/cattle';
 import AddCattleDialog from './AddCattleDialog';
 import EditCattleDialog from './EditCattleDialog';
 import WeightDialog from './WeightDialog';
+import BreedsDialog from './BreedsDialog';
+import WeightHistoryDialog from './WeightHistoryDialog';
 
-type CattleData = any; // We'll refine this later for stricter types if needed, Prisma generated typings can be complex here
+type CattleData = any;
 
-export default function CattleClientView({ rawData }: { rawData: CattleData[] }) {
+export default function CattleClientView({ rawData, breeds }: { rawData: CattleData[], breeds: any[] }) {
   const [sortCol, setSortCol] = useState<string>('createdAt');
   const [sortDesc, setSortDesc] = useState<boolean>(true);
 
@@ -22,6 +24,9 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
   const [weightCattleData, setWeightCattleData] = useState<CattleData | null>(null);
   const [isWeightOpen, setIsWeightOpen] = useState(false);
   const [search, setSearch] = useState('');
+  
+  const [isBreedsOpen, setIsBreedsOpen] = useState(false);
+  const [historyCattleData, setHistoryCattleData] = useState<CattleData | null>(null);
   
   const [activeTab, setActiveTab] = useState<'ACTIVE' | 'SOLD' | 'DECEASED'>('ACTIVE');
   const [prices, setPrices] = useState<Record<string, number>>({});
@@ -36,6 +41,11 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
         const diffA = getWeightDiff(a);
         const diffB = getWeightDiff(b);
         return sortDesc ? diffB - diffA : diffA - diffB;
+      }
+
+      if (sortCol === 'breed') {
+        valA = a.breed?.name || '-';
+        valB = b.breed?.name || '-';
       }
 
       if (sortCol === 'entryDate' || sortCol === 'createdAt') {
@@ -58,7 +68,7 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
     const q = search.toLowerCase().trim();
     if (!q) return base;
     return base.filter((c) =>
-      [c.tagNumber, c.breed]
+      [c.tagNumber, c.breed?.name]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q))
     );
@@ -121,13 +131,22 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
             className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition whitespace-nowrap"
-        >
-          <Plus className="w-5 h-5" />
-          إضافة عجل
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsBreedsOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition whitespace-nowrap font-medium"
+          >
+            <Settings className="w-5 h-5" />
+            إدارة السلالات
+          </button>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition whitespace-nowrap"
+          >
+            <Plus className="w-5 h-5" />
+            إضافة عجل
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -167,9 +186,9 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
                 const diffColor = diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-rose-600' : 'text-slate-500';
                 
                 return (
-                  <tr key={cattle.id} className="hover:bg-slate-50 transition">
+                  <tr key={cattle.id} className={`transition border-s-4 ${cattle.status === 'DECEASED' ? 'border-rose-500 bg-rose-50' : 'border-transparent hover:bg-slate-50'}`}>
                     <td className="px-6 py-4 font-semibold text-slate-900">{cattle.tagNumber}</td>
-                    <td className="px-6 py-4 text-slate-600">{cattle.breed || '-'}</td>
+                    <td className="px-6 py-4 text-slate-600">{cattle.breed?.name || '-'}</td>
                     <td className="px-6 py-4 text-slate-600">{new Date(cattle.entryDate).toLocaleDateString()}</td>
                     <td className="px-6 py-4 text-slate-600">{cattle.entryWeight.toFixed(2)}</td>
                     <td className="px-6 py-4 font-medium text-slate-800">{cattle.currentWeight?.toFixed(2) || '-'}</td>
@@ -182,13 +201,13 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
                           type="number"
                           min="0"
                           step="0.01"
-                          placeholder="0.00"
+                          placeholder={cattle.breed?.pricePerKg?.toFixed(2) || "0.00"}
                           value={prices[cattle.id] || ''}
                           onChange={(e) => setPrices(prev => ({ ...prev, [cattle.id]: parseFloat(e.target.value) }))}
                           className="w-20 px-2 py-1 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-emerald-500"
                         />
                         <span className="font-semibold text-slate-700">
-                          = ج.م {((prices[cattle.id] || 0) * (cattle.currentWeight || cattle.entryWeight)).toFixed(2)}
+                          = ج.م {((prices[cattle.id] || cattle.breed?.pricePerKg || 0) * (cattle.currentWeight || cattle.entryWeight)).toFixed(2)}
                         </span>
                       </div>
                     </td>
@@ -196,12 +215,19 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         cattle.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
                         cattle.status === 'SOLD' ? 'bg-amber-100 text-amber-700' :
-                        'bg-slate-100 text-slate-700'
+                        'bg-rose-100 text-rose-800'
                       }`}>
-                        {cattle.status}
+                        {cattle.status === 'ACTIVE' ? 'القطيع النشط' : cattle.status === 'SOLD' ? 'مباع' : 'نافق'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-end flex items-center justify-end gap-2">
+                       <button
+                        onClick={() => setHistoryCattleData(cattle)}
+                        className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition tooltip"
+                        title="سجل الأوزان"
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
                        <button
                         onClick={() => { setWeightCattleData(cattle); setIsWeightOpen(true); }}
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition tooltip"
@@ -239,12 +265,13 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
         </div>
       </div>
 
-      <AddCattleDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+      <AddCattleDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} breeds={breeds} />
       {editCattleData && (
         <EditCattleDialog 
           isOpen={isEditOpen} 
           onClose={() => setIsEditOpen(false)} 
           cattle={editCattleData} 
+          breeds={breeds}
         />
       )}
       {weightCattleData && (
@@ -253,6 +280,10 @@ export default function CattleClientView({ rawData }: { rawData: CattleData[] })
           onClose={() => setIsWeightOpen(false)} 
           cattle={weightCattleData} 
         />
+      )}
+      <BreedsDialog isOpen={isBreedsOpen} onClose={() => setIsBreedsOpen(false)} breeds={breeds} />
+      {historyCattleData && (
+        <WeightHistoryDialog isOpen={!!historyCattleData} onClose={() => setHistoryCattleData(null)} cattle={historyCattleData} />
       )}
     </>
   );

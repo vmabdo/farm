@@ -33,8 +33,8 @@ export default function PayslipDialog({
     .filter(p => p.type === 'SALARY')
     .reduce((sum, p) => sum + p.amount, 0);
 
-  // Net calculation mapping logic: Base Salary + Bonuses - Deductions
-  const netEarnings = worker.salary + totalBonuses - totalDeductions;
+  // Net calculation mapping logic: Base Salary + Bonuses - Deductions - Salary Paid
+  const netEarnings = worker.salary + totalBonuses - totalDeductions - salaryPayments;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">

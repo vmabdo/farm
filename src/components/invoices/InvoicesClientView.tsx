@@ -9,7 +9,7 @@ import InvoicePrintDialog from './InvoicePrintDialog';
 
 type InvoiceData = any;
 
-export default function InvoicesClientView({ initialInvoices }: { initialInvoices: InvoiceData[] }) {
+export default function InvoicesClientView({ initialInvoices, cattle }: { initialInvoices: InvoiceData[], cattle: any[] }) {
   const [sortCol, setSortCol] = useState<string>('invoiceDate');
   const [sortDesc, setSortDesc] = useState<boolean>(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -42,7 +42,7 @@ export default function InvoicesClientView({ initialInvoices }: { initialInvoice
     const q = search.toLowerCase().trim();
     if (!q) return sortedInvoices;
     return sortedInvoices.filter((t) =>
-      [t.clientName, t.notes]
+      [t.clientName, t.notes, String(t.serialNumber)]
         .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
     );
   }, [sortedInvoices, search]);
@@ -72,7 +72,7 @@ export default function InvoicesClientView({ initialInvoices }: { initialInvoice
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="البحث في الفواتير..."
+            placeholder="البحث برقم الفاتورة أو اسم العميل..."
             className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
@@ -89,6 +89,7 @@ export default function InvoicesClientView({ initialInvoices }: { initialInvoice
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-medium">
               <tr>
                 {[
+                  { label: 'رقم الفاتورة', key: 'serialNumber' },
                   { label: 'التاريخ', key: 'invoiceDate' },
                   { label: 'اسم العميل', key: 'clientName' },
                   { label: 'الإجمالي (ج.م)', key: 'totalAmount' },
@@ -109,6 +110,7 @@ export default function InvoicesClientView({ initialInvoices }: { initialInvoice
             <tbody className="divide-y divide-slate-100">
               {filteredInvoices.map((inv: InvoiceData) => (
                 <tr key={inv.id} className="hover:bg-slate-50 transition">
+                  <td className="px-6 py-4 font-mono font-medium text-slate-800">#INV-{inv.serialNumber}</td>
                   <td className="px-6 py-4 text-slate-600">{new Date(inv.invoiceDate).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-bold text-slate-900 flex items-center gap-2"><Receipt className="w-4 h-4 text-slate-400"/> {inv.clientName}</td>
                   <td className="px-6 py-4 text-slate-600">{inv.totalAmount.toFixed(2)}</td>
@@ -130,7 +132,7 @@ export default function InvoicesClientView({ initialInvoices }: { initialInvoice
         </div>
       </div>
 
-      <CreateInvoiceDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+      <CreateInvoiceDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} cattle={cattle} />
       {printData && <InvoicePrintDialog isOpen={!!printData} onClose={() => setPrintData(null)} invoice={printData} />}
     </>
   );

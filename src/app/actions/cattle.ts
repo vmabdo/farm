@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 
 export async function createCattle(formData: FormData) {
   const tagNumber = formData.get('tagNumber') as string;
-  const breed = formData.get('breed') as string;
+  const breedId = formData.get('breedId') as string;
   const entryDate = formData.get('entryDate') as string;
   const entryWeight = parseFloat(formData.get('entryWeight') as string);
 
@@ -15,7 +15,7 @@ export async function createCattle(formData: FormData) {
     const cattle = await prisma.cattle.create({
       data: {
         tagNumber,
-        breed,
+        breedId: breedId || null,
         entryDate: new Date(entryDate),
         entryWeight,
         currentWeight: entryWeight,
@@ -43,7 +43,7 @@ export async function createCattle(formData: FormData) {
 
 export async function updateCattle(id: string, formData: FormData) {
   const tagNumber = formData.get('tagNumber') as string;
-  const breed = formData.get('breed') as string;
+  const breedId = formData.get('breedId') as string;
   const entryDate = formData.get('entryDate') as string;
   const status = formData.get('status') as string;
 
@@ -52,7 +52,7 @@ export async function updateCattle(id: string, formData: FormData) {
       where: { id },
       data: {
         tagNumber,
-        breed,
+        breedId: breedId || null,
         entryDate: new Date(entryDate),
         status,
       },

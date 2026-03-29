@@ -43,7 +43,7 @@ export default function EditRecordDialog({ isOpen, onClose, record, cattle, medi
               className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
             >
               {cattle.map(c => (
-                <option key={c.id} value={c.id}>{c.tagNumber} ({c.breed})</option>
+                <option key={c.id} value={c.id}>{c.tagNumber} {c.breed?.name ? `(${c.breed.name})` : ''}</option>
               ))}
             </select>
           </div>

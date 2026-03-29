@@ -10,11 +10,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. Cattle & Weights Management
+// 1. Breed Management
+model Breed {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  pricePerKg Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  cattle     Cattle[]
+}
+
+// 2. Cattle & Weights Management
 model Cattle {
   id            String         @id @default(cuid())
   tagNumber     String         @unique
-  breed         String?
+  breedId       String?
+  breed         Breed?         @relation(fields: [breedId], references: [id])
   entryDate     DateTime       @default(now())
   entryWeight   Float
   currentWeight Float?
@@ -156,9 +168,10 @@ model Equipment {
 
 // 7. Invoices & Reports
 model Invoice {
-  id          String   @id @default(cuid())
-  clientName  String
-  invoiceDate DateTime @default(now())
+  id           String   @id @default(cuid())
+  serialNumber Int      @default(autoincrement())
+  clientName   String
+  invoiceDate  DateTime @default(now())
   totalAmount Float
   discount    Float    @default(0)
   netAmount   Float

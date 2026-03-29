@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { updateCattle } from '@/app/actions/cattle';
 import { X } from 'lucide-react';
 
-export default function EditCattleDialog({ isOpen, onClose, cattle }: { isOpen: boolean; onClose: () => void; cattle: any }) {
+export default function EditCattleDialog({ isOpen, onClose, cattle, breeds = [] }: { isOpen: boolean; onClose: () => void; cattle: any; breeds?: any[] }) {
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -45,11 +45,16 @@ export default function EditCattleDialog({ isOpen, onClose, cattle }: { isOpen: 
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">السلالة</label>
-            <input 
-              name="breed" 
-              defaultValue={cattle.breed}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
-            />
+            <select
+              name="breedId" 
+              defaultValue={cattle.breedId || ''}
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white" 
+            >
+              <option value="">بدون سلالة (أخرى)</option>
+              {breeds.map(b => (
+                <option key={b.id} value={b.id}>{b.name} ({b.pricePerKg} ج.م/كجم)</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ الدخول *</label>

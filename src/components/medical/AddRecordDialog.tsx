@@ -43,7 +43,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
             >
               <option value="">اختر الحيوان...</option>
               {cattle.map(c => (
-                <option key={c.id} value={c.id}>{c.tagNumber} ({c.breed})</option>
+                <option key={c.id} value={c.id}>{c.tagNumber} {c.breed?.name ? `(${c.breed.name})` : ''}</option>
               ))}
             </select>
           </div>
