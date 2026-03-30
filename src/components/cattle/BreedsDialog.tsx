@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { createBreed, updateBreed, deleteBreed } from '@/app/actions/breeds';
 import { X, Plus, Edit2, Trash2 } from 'lucide-react';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 export default function BreedsDialog({ isOpen, onClose, breeds }: { isOpen: boolean; onClose: () => void; breeds: any[] }) {
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   
   if (!isOpen) return null;
 
@@ -31,15 +33,17 @@ export default function BreedsDialog({ isOpen, onClose, breeds }: { isOpen: bool
   }
 
   async function handleDelete(id: string) {
-    if (confirm('هل أنت متأكد من حذف هذه السلالة؟')) {
-      const res = await deleteBreed(id);
-      if (!res.success) alert(res.error);
-    }
+    setConfirmId(id);
+  }
+
+  async function executeDelete(id: string) {
+    const res = await deleteBreed(id);
+    if (!res.success) alert(res.error);
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden relative flex flex-col" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-lg overflow-hidden relative flex flex-col" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100 flex-shrink-0">
           <h2 className="text-xl font-bold text-slate-800">إدارة السلالات</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
@@ -52,13 +56,13 @@ export default function BreedsDialog({ isOpen, onClose, breeds }: { isOpen: bool
           <form onSubmit={onSubmitAdd} className="flex gap-2 items-end bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
             <div className="flex-1">
               <label className="block text-xs font-semibold text-emerald-800 mb-1">اسم السلالة *</label>
-              <input name="name" required className="w-full px-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="مثال: هولشتاين" />
+              <input name="name" required className="w-full px-3 py-2 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="مثال: هولشتاين" />
             </div>
             <div className="w-32">
               <label className="block text-xs font-semibold text-emerald-800 mb-1">السعر (ج.م/كجم) *</label>
-              <input name="pricePerKg" type="number" min="0" step="0.01" required className="w-full px-3 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="0.00" />
+              <input name="pricePerKg" type="number" min="0" step="0.01" required className="w-full px-3 py-2 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="0.00" />
             </div>
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50 h-[38px] flex items-center justify-center">
+            <button type="submit" disabled={loading} className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 h-[38px] flex items-center justify-center">
               <Plus className="w-4 h-4" />
             </button>
           </form>
@@ -70,7 +74,7 @@ export default function BreedsDialog({ isOpen, onClose, breeds }: { isOpen: bool
               <p className="text-sm text-slate-500 text-center py-4">لا توجد سلالات مضافة بعد.</p>
             ) : (
               breeds.map(breed => (
-                <div key={breed.id} className="p-3 border border-slate-200 rounded-lg flex items-center justify-between hover:bg-slate-50 transition">
+                <div key={breed.id} className="p-3 border border-slate-200 rounded-xl flex items-center justify-between hover:bg-slate-50 transition">
                   {editId === breed.id ? (
                     <form onSubmit={(e) => onSubmitEdit(e, breed.id)} className="flex items-center gap-2 flex-1">
                       <input name="name" defaultValue={breed.name} required className="flex-1 px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-emerald-500" />
@@ -97,9 +101,18 @@ export default function BreedsDialog({ isOpen, onClose, breeds }: { isOpen: bool
         </div>
 
         <div className="p-4 border-t border-slate-100 flex justify-end flex-shrink-0">
-          <button onClick={onClose} className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">إغلاق</button>
+          <button onClick={onClose} className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition">إغلاق</button>
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={!!confirmId}
+        onClose={() => setConfirmId(null)}
+        onConfirm={() => confirmId && executeDelete(confirmId)}
+        title="حذف السلالة"
+        message="هل أنت متأكد من حذف هذه السلالة؟ سيتعذر إسنادها للعجول بعد الحذف."
+        confirmText="حذف السلالة"
+        variant="danger"
+      />
     </div>
   );
 }

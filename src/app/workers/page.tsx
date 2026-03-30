@@ -22,15 +22,15 @@ export default async function WorkersPage() {
       </header>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-slate-500 mb-1">إجمالي العمال</span>
           <span className="text-2xl font-bold text-slate-800">{workers.length}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-emerald-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-emerald-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-emerald-600 mb-1">على رأس العمل</span>
           <span className="text-2xl font-bold text-emerald-700">{workers.filter(w => w.active).length}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-blue-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-blue-600 mb-1">سجلات المدفوعات</span>
           <span className="text-2xl font-bold text-blue-700">{payrolls.length}</span>
         </div>

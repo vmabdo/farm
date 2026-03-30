@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Search, Wrench } from 'lucide-react';
 import { deleteEquipment } from '@/app/actions/equipment';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 import AddEquipmentDialog from './AddEquipmentDialog';
 import EditEquipmentDialog from './EditEquipmentDialog';
@@ -15,6 +16,13 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editData, setEditData] = useState<EquipmentData | null>(null);
   const [search, setSearch] = useState('');
+
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean; title: string; message: string;
+    confirmText: string; variant: 'danger' | 'warning' | 'primary'; onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', confirmText: 'تأكيد', variant: 'danger', onConfirm: () => {} });
+  const openConfirm = (opts: Omit<typeof confirmState, 'isOpen'>) => setConfirmState({ isOpen: true, ...opts });
+  const closeConfirm = () => setConfirmState((s) => ({ ...s, isOpen: false }));
 
   // ==========================
   // Memoized Sorted Data
@@ -51,10 +59,13 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذه المعدة؟')) {
-      const res = await deleteEquipment(id);
-      if (!res.success) alert(res.error);
-    }
+    openConfirm({
+      title: 'حذف المعدة',
+      message: 'هل أنت متأكد من حذف هذه المعدة؟',
+      confirmText: 'حذف المعدة',
+      variant: 'danger',
+      onConfirm: async () => { const res = await deleteEquipment(id); if (!res.success) alert(res.error); },
+    });
   };
 
   return (
@@ -68,17 +79,17 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="البحث عن معدة..."
-            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
         <button
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />إضافة معدة</button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm whitespace-nowrap">
             <thead className="bg-emerald-50/50 border-b border-emerald-100 text-slate-600 font-medium">
@@ -89,23 +100,23 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
                   { label: 'الحالة', key: 'status' },
                   { label: 'ملاحظات', key: 'notes' }
                 ].map((col) => (
-                  <th key={col.key} onClick={() => handleSort(col.key)} className="px-6 py-4 cursor-pointer hover:bg-emerald-100/50 transition select-none">
+                  <th key={col.key} onClick={() => handleSort(col.key)} className="px-8 py-5 cursor-pointer hover:bg-emerald-100/50 transition select-none">
                     <div className="flex items-center gap-1">
                       {col.label}
                       {sortCol === col.key && (sortDesc ? <ChevronDown className="w-4 h-4 text-emerald-500" /> : <ChevronUp className="w-4 h-4 text-emerald-500" />)}
                     </div>
                   </th>
                 ))}
-                <th className="px-6 py-4 text-end">الإجراءات</th>
+                <th className="px-8 py-5 text-end">الإجراءات</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
               {filteredEquipment.map((eq: EquipmentData) => (
                 <tr key={eq.id} className="hover:bg-slate-50 transition">
-                  <td className="px-6 py-4 font-bold text-slate-900 flex items-center gap-2"><Wrench className="w-4 h-4 text-slate-400"/> {eq.name}</td>
-                  <td className="px-6 py-4 text-slate-600">{eq.type}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-5 font-bold text-slate-900 flex items-center gap-2"><Wrench className="w-4 h-4 text-slate-400"/> {eq.name}</td>
+                  <td className="px-8 py-5 text-slate-600">{eq.type}</td>
+                  <td className="px-8 py-5">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                       eq.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
                       eq.status === 'MAINTENANCE' ? 'bg-amber-100 text-amber-700' :
@@ -114,10 +125,10 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
                       {eq.status === 'ACTIVE' ? 'نشط' : eq.status === 'MAINTENANCE' ? 'صيانة' : 'خارج الخدمة'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-slate-500 truncate max-w-[200px]">{eq.notes || '-'}</td>
-                  <td className="px-6 py-4 text-end flex flex-nowrap items-center justify-end gap-2">
-                    <button onClick={() => setEditData(eq)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg transition"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(eq.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                  <td className="px-8 py-5 text-slate-500 truncate max-w-[200px]">{eq.notes || '-'}</td>
+                  <td className="px-8 py-5 text-end flex flex-nowrap items-center justify-end gap-2">
+                    <button onClick={() => setEditData(eq)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(eq.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -131,6 +142,11 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
 
       <AddEquipmentDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
       {editData && <EditEquipmentDialog isOpen={!!editData} onClose={() => setEditData(null)} equipment={editData} />}
+      <ConfirmDialog
+        isOpen={confirmState.isOpen} onClose={closeConfirm} onConfirm={confirmState.onConfirm}
+        title={confirmState.title} message={confirmState.message}
+        confirmText={confirmState.confirmText} variant={confirmState.variant}
+      />
     </>
   );
 }

@@ -38,7 +38,7 @@ export default function PayslipDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-2xl overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-emerald-50/50">
           <div className="flex items-center gap-3 text-emerald-700">
             <Receipt className="w-6 h-6" />
@@ -66,20 +66,20 @@ export default function PayslipDialog({
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
                 <tr>
-                  <th className="px-5 py-3">التاريخ</th>
-                  <th className="px-5 py-3">النوع</th>
-                  <th className="px-5 py-3">ملاحظات</th>
-                  <th className="px-5 py-3 text-right">المبلغ (ج.م)</th>
+                  <th className="px-6 py-4">التاريخ</th>
+                  <th className="px-6 py-4">النوع</th>
+                  <th className="px-6 py-4">ملاحظات</th>
+                  <th className="px-6 py-4 text-right">المبلغ (ج.م)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {workerPayrolls.length > 0 ? (
                   workerPayrolls.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50 transition">
-                      <td className="px-5 py-3 text-slate-600">
+                      <td className="px-6 py-4 text-slate-600">
                         {new Date(log.paymentDate).toLocaleDateString()}
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-6 py-4">
                         <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                           log.type === 'BONUS' ? 'bg-emerald-100 text-emerald-700' :
                           log.type.includes('DEDUCT') ? 'bg-rose-100 text-rose-700' :
@@ -88,10 +88,10 @@ export default function PayslipDialog({
                           {log.type}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-slate-600 truncate max-w-[200px]">
+                      <td className="px-6 py-4 text-slate-600 truncate max-w-[200px]">
                         {log.notes || '-'}
                       </td>
-                      <td className={`px-5 py-3 text-right font-medium ${
+                      <td className={`px-6 py-4 text-right font-medium ${
                          log.type.includes('DEDUCT') ? 'text-rose-600' : 'text-emerald-600'
                       }`}>
                         {log.type.includes('DEDUCT') ? '-' : '+'}{log.amount.toFixed(2)}
@@ -138,13 +138,13 @@ export default function PayslipDialog({
           <div className="mt-8 flex justify-end gap-3">
              <button 
               onClick={() => window.print()}
-              className="px-5 py-2 flex items-center gap-2 border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 rounded-lg transition"
+              className="px-5 py-2 flex items-center gap-2 border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 rounded-xl transition"
             >
               <Download className="w-4 h-4" /> طباعة
             </button>
             <button 
               onClick={onClose}
-              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition"
+              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition"
             >
               إغلاق
             </button>

@@ -9,16 +9,18 @@ export async function createCattle(formData: FormData) {
   const entryDate = formData.get('entryDate') as string;
   const entryWeight = parseFloat(formData.get('entryWeight') as string);
 
+  if (!breedId) return { success: false, error: 'يجب اختيار سلالة العجل' };
   if (entryWeight < 0) return { success: false, error: 'Weight cannot be negative' };
 
   try {
     const cattle = await prisma.cattle.create({
       data: {
         tagNumber,
-        breedId: breedId || null,
+        breedId: breedId,
         entryDate: new Date(entryDate),
         entryWeight,
         currentWeight: entryWeight,
+        lastWeightDifference: 0,
         status: 'ACTIVE',
       },
     });
@@ -47,12 +49,14 @@ export async function updateCattle(id: string, formData: FormData) {
   const entryDate = formData.get('entryDate') as string;
   const status = formData.get('status') as string;
 
+  if (!breedId) return { success: false, error: 'يجب اختيار سلالة العجل' };
+
   try {
     await prisma.cattle.update({
       where: { id },
       data: {
         tagNumber,
-        breedId: breedId || null,
+        breedId: breedId,
         entryDate: new Date(entryDate),
         status,
       },
@@ -97,7 +101,23 @@ export async function addWeightRecord(cattleId: string, formData: FormData) {
 
   try {
     await prisma.$transaction(async (tx) => {
-      // 1. Create the new weight record
+      // 1. Fetch exact previous weight record BEFORE creating the new one
+      const previousWeightRecord = await tx.weightRecord.findFirst({
+        where: { cattleId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const cattle = await tx.cattle.findUnique({
+        where: { id: cattleId },
+      });
+      
+      if (!cattle) throw new Error('Cattle not found');
+
+      // 2. Accurate Math: (New Weight) - (Exact Last Recorded Weight)
+      const lastRecordedWeight = previousWeightRecord ? previousWeightRecord.weight : cattle.entryWeight;
+      const lastWeightDifference = weight - lastRecordedWeight;
+
+      // 3. Create the new weight record
       await tx.weightRecord.create({
         data: {
           cattleId,
@@ -107,19 +127,14 @@ export async function addWeightRecord(cattleId: string, formData: FormData) {
         },
       });
 
-      // 2. We should update the Cattle's currentWeight to the LATEST weight by date
-      // Find the latest weight record for this cattle, using id to break ties
-      const latestWeightRecord = await tx.weightRecord.findFirst({
-        where: { cattleId },
-        orderBy: [{ date: 'desc' }, { id: 'desc' }],
+      // 4. Update the Cattle's currentWeight and lastWeightDifference
+      await tx.cattle.update({
+        where: { id: cattleId },
+        data: { 
+          currentWeight: weight,
+          lastWeightDifference,
+        },
       });
-
-      if (latestWeightRecord) {
-        await tx.cattle.update({
-          where: { id: cattleId },
-          data: { currentWeight: latestWeightRecord.weight },
-        });
-      }
     });
 
     revalidatePath('/cattle');

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 :root {
   --background: #ffffff;
@@ -33,4 +34,127 @@ input, textarea, select {
   background-image:
     linear-gradient(to right, #f1f5f9 1px, transparent 1px),
     linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+}
+
+@layer base {
+  button, a, tbody tr {
+    transition: all 0.2s ease-in-out;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
+  /* ── 1. Reset the very root – kill all h-screen / overflow-hidden ──── */
+  html {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;       /* was: flex flex-col             */
+    background-color: white !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── 2. SidebarProvider wrapper (first child of body) ──────────────── */
+  body > * {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* ── 3. The flex row that holds Sidebar + main ─────────────────────── */
+  /* Tailwind generates a class-based selector; target by structure too  */
+  body * {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* ── 4. Sidebar & TopBar — fully hidden ────────────────────────────── */
+  header,
+  aside,
+  nav[aria-label],
+  [class*="sidebar"],
+  [class*="topbar"] {
+    display: none !important;
+  }
+
+  /* ── 5. Make <main> fill the full printed page ─────────────────────── */
+  main {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
+    background: white !important;
+  }
+
+  /* ── 6. Inner content wrapper ─────────────────────────────────────── */
+  main > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
+  }
+
+  /* ── 7. Decorative elements ────────────────────────────────────────── */
+  .bg-grid-slate-100,
+  [class*="backdrop-blur"] {
+    display: none !important;
+  }
+
+  /* Remove only the animation effect, not the element itself */
+  [class*="animate-in"],
+  [class*="fade-in"],
+  [class*="slide-in"] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* ── 8. Flatten card shadows into borders ────────────────────────────  */
+  [class*="shadow"] {
+    box-shadow: none !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* ── 9. Page-break control ─────────────────────────────────────────── */
+  table { page-break-inside: auto !important; }
+  tr    { page-break-inside: avoid !important; page-break-after: auto !important; }
+
+  [class*="break-inside-avoid"] {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* ── 10. Force grids/flex to multi-column for print ─────────────────  */
+  .print\:grid-cols-2  { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .print\:grid-cols-4  { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+
+  /* ── 11. Hide all injected scripts, next.js internals, and iframe elements from print ── */
+  script, iframe, noscript, style, link, meta, [id^="next-route-announcer"] {
+    display: none !important;
+  }
+  
+  /* Hide Next.js dev tools and overlay elements if present */
+  nextjs-portal, #nextjs-portal {
+    display: none !important;
+  }
 }

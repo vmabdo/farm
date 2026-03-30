@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, TrendingUp, TrendingDown, Package, Search } from 'lucide-react';
 import { deleteFeedItem, deleteFeedOrder, deleteFeedConsumption } from '@/app/actions/feed';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 import AddFeedItemDialog from './AddFeedItemDialog';
 import EditFeedItemDialog from './EditFeedItemDialog';
@@ -44,6 +45,13 @@ export default function FeedClientView({
   const [isAddConsOpen, setIsAddConsOpen] = useState(false);
   const [editConsData, setEditConsData] = useState<FeedConsumption | null>(null);
   const [search, setSearch] = useState('');
+
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean; title: string; message: string;
+    confirmText: string; variant: 'danger' | 'warning' | 'primary'; onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', confirmText: 'تأكيد', variant: 'danger', onConfirm: () => {} });
+  const openConfirm = (opts: Omit<typeof confirmState, 'isOpen'>) => setConfirmState({ isOpen: true, ...opts });
+  const closeConfirm = () => setConfirmState((s) => ({ ...s, isOpen: false }));
 
   // ==========================
   // Memoized Sorted Data
@@ -141,24 +149,33 @@ export default function FeedClientView({
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا العلف؟ سيتم مسح جميع الطلبات والاستهلاك المرتبط به.')) {
-      const res = await deleteFeedItem(id);
-      if (!res.success) alert(res.error);
-    }
+    openConfirm({
+      title: 'حذف نوع العلف',
+      message: 'هل أنت متأكد من حذف هذا العلف؟ سيتم مسح جميع الطلبات والاستهلاك المرتبط به.',
+      confirmText: 'حذف العلف',
+      variant: 'danger',
+      onConfirm: async () => { const res = await deleteFeedItem(id); if (!res.success) alert(res.error); },
+    });
   };
 
   const handleDeleteOrder = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا الطلب؟ سيتم تقليل المخزون وفقاً لذلك.')) {
-      const res = await deleteFeedOrder(id);
-      if (!res.success) alert(res.error);
-    }
+    openConfirm({
+      title: 'حذف طلب الشراء',
+      message: 'هل أنت متأكد من حذف هذا الطلب؟ سيتم تقليل المخزون وفقاً لذلك.',
+      confirmText: 'حذف الطلب',
+      variant: 'warning',
+      onConfirm: async () => { const res = await deleteFeedOrder(id); if (!res.success) alert(res.error); },
+    });
   };
 
   const handleDeleteCons = async (id: string) => {
-    if (confirm('Delete this consumption log? Inventory stock will be INCREASED accurately.')) {
-      const res = await deleteFeedConsumption(id);
-      if (!res.success) alert(res.error);
-    }
+    openConfirm({
+      title: 'حذف سجل الاستهلاك',
+      message: 'هل أنت متأكد؟ سيتم زيادة المخزون بمقدار الكمية المحذوفة.',
+      confirmText: 'حذف السجل',
+      variant: 'warning',
+      onConfirm: async () => { const res = await deleteFeedConsumption(id); if (!res.success) alert(res.error); },
+    });
   };
 
   return (
@@ -167,19 +184,19 @@ export default function FeedClientView({
         <div className="flex bg-slate-200/50 p-1 rounded-xl">
           <button 
             onClick={() => setActiveTab('inventory')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'inventory' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'inventory' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
             المخزون المتوفر
           </button>
           <button 
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
             طلبات الشراء
           </button>
           <button 
             onClick={() => setActiveTab('consumption')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'consumption' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'consumption' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
             سجلات الاستهلاك
           </button>
@@ -193,7 +210,7 @@ export default function FeedClientView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="البحث في الأعلاف..."
-            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
 
@@ -201,7 +218,7 @@ export default function FeedClientView({
           {activeTab === 'inventory' && (
             <button
               onClick={() => setIsAddItemOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition"
             >
               <Plus className="w-5 h-5" /> إضافة نوع علف
             </button>
@@ -209,7 +226,7 @@ export default function FeedClientView({
           {activeTab === 'orders' && (
             <button
               onClick={() => setIsAddOrderOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
             >
               <TrendingUp className="w-5 h-5" /> تسجيل طلب
             </button>
@@ -217,14 +234,14 @@ export default function FeedClientView({
           {activeTab === 'consumption' && (
             <button
               onClick={() => setIsAddConsOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition"
             >
               <TrendingDown className="w-5 h-5" />سجل الاستهلاك</button>
           )}
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm whitespace-nowrap">
             
@@ -239,14 +256,14 @@ export default function FeedClientView({
                     { label: 'الوحدة', key: 'unit' },
                     { label: 'سعر اليوم (ج.م)', key: 'dailyPrice' },
                   ].map((col) => (
-                    <th key={col.key} onClick={() => handleSortItems(col.key)} className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition select-none">
+                    <th key={col.key} onClick={() => handleSortItems(col.key)} className="px-8 py-5 cursor-pointer hover:bg-slate-100 transition select-none">
                       <div className="flex items-center gap-1">
                         {col.label}
                         {itemsSortCol === col.key && (itemsSortDesc ? <ChevronDown className="w-4 h-4 text-emerald-500" /> : <ChevronUp className="w-4 h-4 text-emerald-500" />)}
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">الإجراءات</th>
+                  <th className="px-8 py-5 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -262,14 +279,14 @@ export default function FeedClientView({
                     { label: 'التكلفة (ج.م)', key: 'cost' },
                     { label: 'المورد', key: 'supplier' }
                   ].map((col) => (
-                    <th key={col.key} onClick={() => handleSortOrders(col.key)} className="px-6 py-4 cursor-pointer hover:bg-indigo-100/50 transition select-none">
+                    <th key={col.key} onClick={() => handleSortOrders(col.key)} className="px-8 py-5 cursor-pointer hover:bg-indigo-100/50 transition select-none">
                       <div className="flex items-center gap-1">
                         {col.label}
                         {ordersSortCol === col.key && (ordersSortDesc ? <ChevronDown className="w-4 h-4 text-indigo-500" /> : <ChevronUp className="w-4 h-4 text-indigo-500" />)}
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">الإجراءات</th>
+                  <th className="px-8 py-5 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -284,14 +301,14 @@ export default function FeedClientView({
                     { label: 'الكمية المستهلكة', key: 'quantity' },
                     { label: 'ملاحظات', key: 'notes' }
                   ].map((col) => (
-                    <th key={col.key} onClick={() => handleSortCons(col.key)} className="px-6 py-4 cursor-pointer hover:bg-amber-100/50 transition select-none">
+                    <th key={col.key} onClick={() => handleSortCons(col.key)} className="px-8 py-5 cursor-pointer hover:bg-amber-100/50 transition select-none">
                       <div className="flex items-center gap-1">
                         {col.label}
                         {consSortCol === col.key && (consSortDesc ? <ChevronDown className="w-4 h-4 text-amber-500" /> : <ChevronUp className="w-4 h-4 text-amber-500" />)}
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">الإجراءات</th>
+                  <th className="px-8 py-5 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -301,14 +318,14 @@ export default function FeedClientView({
               {/* INVENTORY ROWS */}
               {activeTab === 'inventory' && filteredItems.map((item: FeedItem) => (
                 <tr key={item.id} className="hover:bg-slate-50 transition">
-                  <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Package className="w-4 h-4 text-slate-400"/> {item.name}</td>
-                  <td className="px-6 py-4 text-slate-600">{item.type}</td>
-                  <td className="px-6 py-4 font-bold text-emerald-600">{item.currentStock.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-slate-500">{item.unit}</td>
-                  <td className="px-6 py-4 font-medium text-slate-600">{item.dailyPrice ? `ج.م ${item.dailyPrice.toFixed(2)}` : '-'}</td>
-                  <td className="px-6 py-4 text-end">
-                    <button onClick={() => setEditItemData(item)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                  <td className="px-8 py-5 font-semibold text-slate-900 flex items-center gap-2"><Package className="w-4 h-4 text-slate-400"/> {item.name}</td>
+                  <td className="px-8 py-5 text-slate-600">{item.type}</td>
+                  <td className="px-8 py-5 font-bold text-emerald-600">{item.currentStock.toFixed(2)}</td>
+                  <td className="px-8 py-5 text-slate-500">{item.unit}</td>
+                  <td className="px-8 py-5 font-medium text-slate-600">{item.dailyPrice ? `ج.م ${item.dailyPrice.toFixed(2)}` : '-'}</td>
+                  <td className="px-8 py-5 text-end">
+                    <button onClick={() => setEditItemData(item)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -319,14 +336,14 @@ export default function FeedClientView({
               {/* ORDERS ROWS */}
               {activeTab === 'orders' && filteredOrders.map((order: FeedOrder) => (
                 <tr key={order.id} className="hover:bg-indigo-50/20 transition">
-                  <td className="px-6 py-4 text-slate-600">{new Date(order.orderDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 font-medium text-slate-900">{order.feedItem.name}</td>
-                  <td className="px-6 py-4 font-semibold text-indigo-600">+{order.quantity.toFixed(2)} {order.feedItem.unit}</td>
-                  <td className="px-6 py-4 text-slate-600">ج.م {order.cost.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-slate-500">{order.supplier || '-'}</td>
-                  <td className="px-6 py-4 text-end">
-                    <button onClick={() => setEditOrderData(order)} className="p-1.5 text-slate-600 hover:bg-indigo-100 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                  <td className="px-8 py-5 text-slate-600">{new Date(order.orderDate).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 font-medium text-slate-900">{order.feedItem.name}</td>
+                  <td className="px-8 py-5 font-semibold text-indigo-600">+{order.quantity.toFixed(2)} {order.feedItem.unit}</td>
+                  <td className="px-8 py-5 text-slate-600">ج.م {order.cost.toFixed(2)}</td>
+                  <td className="px-8 py-5 text-slate-500">{order.supplier || '-'}</td>
+                  <td className="px-8 py-5 text-end">
+                    <button onClick={() => setEditOrderData(order)} className="p-1.5 text-slate-600 hover:bg-indigo-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -337,13 +354,13 @@ export default function FeedClientView({
               {/* CONSUMPTION ROWS */}
               {activeTab === 'consumption' && filteredConsumptions.map((cons: FeedConsumption) => (
                 <tr key={cons.id} className="hover:bg-amber-50/20 transition">
-                  <td className="px-6 py-4 text-slate-600">{new Date(cons.date).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 font-medium text-slate-900">{cons.feedItem.name}</td>
-                  <td className="px-6 py-4 font-semibold text-amber-600">-{cons.quantity.toFixed(2)} {cons.feedItem.unit}</td>
-                  <td className="px-6 py-4 text-slate-500 truncate max-w-xs">{cons.notes || '-'}</td>
-                  <td className="px-6 py-4 text-end">
-                    <button onClick={() => setEditConsData(cons)} className="p-1.5 text-slate-600 hover:bg-amber-100 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteCons(cons.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                  <td className="px-8 py-5 text-slate-600">{new Date(cons.date).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 font-medium text-slate-900">{cons.feedItem.name}</td>
+                  <td className="px-8 py-5 font-semibold text-amber-600">-{cons.quantity.toFixed(2)} {cons.feedItem.unit}</td>
+                  <td className="px-8 py-5 text-slate-500 truncate max-w-xs">{cons.notes || '-'}</td>
+                  <td className="px-8 py-5 text-end">
+                    <button onClick={() => setEditConsData(cons)} className="p-1.5 text-slate-600 hover:bg-amber-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDeleteCons(cons.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -365,6 +382,11 @@ export default function FeedClientView({
       
       <AddConsumptionDialog isOpen={isAddConsOpen} onClose={() => setIsAddConsOpen(false)} items={initialItems} />
       {editConsData && <EditConsumptionDialog isOpen={!!editConsData} onClose={() => setEditConsData(null)} consumption={editConsData} />}
+      <ConfirmDialog
+        isOpen={confirmState.isOpen} onClose={closeConfirm} onConfirm={confirmState.onConfirm}
+        title={confirmState.title} message={confirmState.message}
+        confirmText={confirmState.confirmText} variant={confirmState.variant}
+      />
     </>
   );
 }

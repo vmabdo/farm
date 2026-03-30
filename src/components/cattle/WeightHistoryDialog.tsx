@@ -7,7 +7,7 @@ export default function WeightHistoryDialog({ isOpen, onClose, cattle }: { isOpe
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden relative flex flex-col" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-2xl overflow-hidden relative flex flex-col" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-slate-800">سجل الأوزان</h2>
@@ -23,9 +23,9 @@ export default function WeightHistoryDialog({ isOpen, onClose, cattle }: { isOpe
             <table className="w-full text-start text-sm whitespace-nowrap">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
                 <tr>
-                  <th className="px-6 py-4">التاريخ</th>
-                  <th className="px-6 py-4">الوزن (كجم)</th>
-                  <th className="px-6 py-4">ملاحظات</th>
+                  <th className="px-8 py-5">التاريخ</th>
+                  <th className="px-8 py-5">الوزن (كجم)</th>
+                  <th className="px-8 py-5">ملاحظات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -33,13 +33,13 @@ export default function WeightHistoryDialog({ isOpen, onClose, cattle }: { isOpe
                   const isLatest = index === 0;
                   return (
                     <tr key={w.id} className="hover:bg-slate-50 transition">
-                      <td className="px-6 py-4 text-slate-600">
+                      <td className="px-8 py-5 text-slate-600">
                         {new Date(w.date).toLocaleDateString()}
                       </td>
-                      <td className={`px-6 py-4 font-bold ${isLatest ? 'text-emerald-600' : 'text-slate-700'}`}>
+                      <td className={`px-8 py-5 font-bold ${isLatest ? 'text-emerald-600' : 'text-slate-700'}`}>
                         {w.weight.toFixed(2)}
                       </td>
-                      <td className="px-6 py-4 text-slate-500 max-w-[200px] truncate">{w.notes || '-'}</td>
+                      <td className="px-8 py-5 text-slate-500 max-w-[200px] truncate">{w.notes || '-'}</td>
                     </tr>
                   );
                 })}
@@ -51,7 +51,7 @@ export default function WeightHistoryDialog({ isOpen, onClose, cattle }: { isOpe
         </div>
 
         <div className="p-4 border-t border-slate-100 flex justify-end flex-shrink-0">
-          <button onClick={onClose} className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">إغلاق</button>
+          <button onClick={onClose} className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition">إغلاق</button>
         </div>
       </div>
     </div>

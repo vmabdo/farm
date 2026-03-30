@@ -27,19 +27,19 @@ export default async function MedicalPage() {
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-slate-500 mb-1">أصناف الأدوية</span>
           <span className="text-2xl font-bold text-slate-800">{medicines.length}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-emerald-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-emerald-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-emerald-600 mb-1">المخزون الكلي (جرعة)</span>
           <span className="text-2xl font-bold text-emerald-700">{medicines.reduce((sum: number, med: any) => sum + med.currentStock, 0)}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-blue-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-blue-600 mb-1">سجلات العلاج</span>
           <span className="text-2xl font-bold text-blue-700">{records.length}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-rose-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-rose-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-rose-600 mb-1">حيوانات معالجة</span>
           <span className="text-2xl font-bold text-rose-700">{new Set(records.map((r: any) => r.cattleId)).size}</span>
         </div>

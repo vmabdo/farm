@@ -44,7 +44,7 @@ export default function SettingsPage() {
         <p className="text-slate-500 mt-2">Manage your administrative credentials and secure access.</p>
       </header>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+      <div className="bg-white rounded-3xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-100 p-8">
         <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
           <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
             <Key className="w-6 h-6" />
@@ -107,7 +107,7 @@ export default function SettingsPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-700/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-4 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-700/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Updating Credentials...' : 'Save New Password'}
             </button>

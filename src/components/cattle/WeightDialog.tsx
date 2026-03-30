@@ -29,7 +29,7 @@ export default function WeightDialog({ isOpen, onClose, cattle }: { isOpen: bool
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
           <div>
             <h2 className="text-xl font-bold text-slate-800">إضافة السجل الوزني</h2>
@@ -67,7 +67,7 @@ export default function WeightDialog({ isOpen, onClose, cattle }: { isOpen: bool
               required 
               value={newWeight}
               onChange={(e) => setNewWeight(parseFloat(e.target.value) || '')}
-              className="w-full px-4 py-2 text-lg font-medium border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
+              className="w-full px-4 py-2 text-lg font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
               placeholder="اكتب الوزن الجديد..."
             />
           </div>
@@ -79,7 +79,7 @@ export default function WeightDialog({ isOpen, onClose, cattle }: { isOpen: bool
               type="date" 
               required 
               defaultValue={new Date().toISOString().split('T')[0]}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
             />
           </div>
           
@@ -88,7 +88,7 @@ export default function WeightDialog({ isOpen, onClose, cattle }: { isOpen: bool
             <textarea 
               name="notes" 
               rows={2}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none" 
               placeholder="ملاحظات اختيارية عن هذا الوزن..."
             ></textarea>
           </div>
@@ -97,12 +97,12 @@ export default function WeightDialog({ isOpen, onClose, cattle }: { isOpen: bool
             <button 
               type="button" 
               onClick={onClose}
-              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
+              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition"
             >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading || typeof newWeight !== 'number'}
-              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
+              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition disabled:opacity-50"
             >
               {loading ? 'جاري الحفظ...' : 'حفظ الوزن'}
             </button>

@@ -23,7 +23,7 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
         <div className="flex justify-between items-center p-4 border-b border-slate-100 print:hidden bg-slate-50 sticky top-0 z-10">
           <button 
             onClick={() => window.print()}
-            className="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
+            className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
           >
             <Printer className="w-4 h-4" />طباعة الفاتورة</button>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition">
@@ -71,21 +71,21 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
             <table className="w-full text-right border-collapse">
               <thead className="bg-slate-100 text-sm font-bold uppercase tracking-wider text-slate-600">
                 <tr>
-                  <th className="px-6 py-4 border-b border-slate-200 text-center w-16">#</th>
-                  <th className="px-6 py-4 border-b border-slate-200">البيان</th>
-                  <th className="px-6 py-4 border-b border-slate-200 text-left w-32">الكمية</th>
-                  <th className="px-6 py-4 border-b border-slate-200 text-left w-32">سعر الوحدة</th>
-                  <th className="px-6 py-4 border-b border-slate-200 text-left w-40">المجموع</th>
+                  <th className="px-8 py-5 border-b border-slate-200 text-center w-16">#</th>
+                  <th className="px-8 py-5 border-b border-slate-200">البيان</th>
+                  <th className="px-8 py-5 border-b border-slate-200 text-left w-32">الكمية</th>
+                  <th className="px-8 py-5 border-b border-slate-200 text-left w-32">سعر الوحدة</th>
+                  <th className="px-8 py-5 border-b border-slate-200 text-left w-40">المجموع</th>
                 </tr>
               </thead>
               <tbody className="text-slate-700 divide-y divide-slate-100">
                 {items.map((item: any, idx: number) => (
                   <tr key={idx}>
-                    <td className="px-6 py-4 text-center text-slate-400 font-medium">{idx + 1}</td>
-                    <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
-                    <td className="px-6 py-4 text-left">{item.quantity}</td>
-                    <td className="px-6 py-4 text-left">{(item.quantity ? (item.price / item.quantity) : 0).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-left font-semibold">{Number(item.price).toFixed(2)}</td>
+                    <td className="px-8 py-5 text-center text-slate-400 font-medium">{idx + 1}</td>
+                    <td className="px-8 py-5 font-semibold text-slate-900">{item.name}</td>
+                    <td className="px-8 py-5 text-left">{item.quantity}</td>
+                    <td className="px-8 py-5 text-left">{(item.quantity ? (item.price / item.quantity) : 0).toFixed(2)}</td>
+                    <td className="px-8 py-5 text-left font-semibold">{Number(item.price).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

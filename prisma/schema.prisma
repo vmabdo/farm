@@ -33,6 +33,7 @@ model Cattle {
   status              String         @default("ACTIVE") // ACTIVE, SOLD, DECEASED
   buyerName           String?
   invoiceSerialNumber Int?
+  lastWeightDifference Float?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
 
@@ -46,6 +47,7 @@ model WeightRecord {
   weight    Float
   date      DateTime @default(now())
   notes     String?
+  createdAt DateTime @default(now())
   cattle    Cattle   @relation(fields: [cattleId], references: [id], onDelete: Cascade)
 }
 

@@ -25,7 +25,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
           <h2 className="text-xl font-bold text-slate-800">تسجيل علاج / تحصين</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
@@ -39,7 +39,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
             <select
               name="cattleId"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
             >
               <option value="">اختر الحيوان...</option>
               {cattle.map(c => (
@@ -52,7 +52,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
             <select
               name="medicineId"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
             >
               <option value="">اختر الدواء...</option>
               {medicines.map(m => (
@@ -65,7 +65,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
             <input 
               name="type" 
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
               placeholder="مثال: تحصين، مضاد حيوي، روتيني"
             />
           </div>
@@ -77,7 +77,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
               min="0"
               step="0.01"
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
             />
           </div>
           <div>
@@ -87,7 +87,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
               type="date"
               defaultValue={new Date().toISOString().split('T')[0]}
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
             />
           </div>
           <div>
@@ -95,7 +95,7 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
             <textarea 
               name="notes"
               rows={2} 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition resize-none" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition resize-none" 
               placeholder="أي أعراض لوحظت أو تفاصيل المتابعة..."
             />
           </div>
@@ -104,12 +104,12 @@ export default function AddRecordDialog({ isOpen, onClose, cattle, medicines }: 
             <button 
               type="button" 
               onClick={onClose}
-              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
+              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition"
             >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading || cattle.length === 0 || medicines.length === 0}
-              className="px-5 py-2 bg-rose-600 text-white font-medium rounded-lg hover:bg-rose-700 transition disabled:opacity-50"
+              className="px-5 py-2 bg-rose-600 text-white font-medium rounded-xl hover:bg-rose-700 transition disabled:opacity-50"
             >
               {loading ? 'جاري التسجيل...' : 'تسجيل علاج'}
             </button>

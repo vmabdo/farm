@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Syringe, HeartPulse, Search } from 'lucide-react';
 import { deleteMedicine, deleteMedicalRecord } from '@/app/actions/medical';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 import AddMedicineDialog from './AddMedicineDialog';
 import EditMedicineDialog from './EditMedicineDialog';
@@ -36,6 +37,13 @@ export default function MedicalClientView({
   const [isAddRecOpen, setIsAddRecOpen] = useState(false);
   const [editRecData, setEditRecData] = useState<MedicalRecordData | null>(null);
   const [search, setSearch] = useState('');
+
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean; title: string; message: string;
+    confirmText: string; variant: 'danger' | 'warning' | 'primary'; onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', confirmText: 'تأكيد', variant: 'danger', onConfirm: () => {} });
+  const openConfirm = (opts: Omit<typeof confirmState, 'isOpen'>) => setConfirmState({ isOpen: true, ...opts });
+  const closeConfirm = () => setConfirmState((s) => ({ ...s, isOpen: false }));
 
   // ==========================
   // Memoized Sorted Data
@@ -117,17 +125,23 @@ export default function MedicalClientView({
   };
 
   const handleDeleteMedicine = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا الدواء؟ سيتم حذف جميع العلاجات المرتبطة به بشكل دائم.')) {
-      const res = await deleteMedicine(id);
-      if (!res.success) alert(res.error);
-    }
+    openConfirm({
+      title: 'حذف الدواء',
+      message: 'هل أنت متأكد من حذف هذا الدواء؟ سيتم حذف جميع العلاجات المرتبطة به بشكل دائم.',
+      confirmText: 'حذف الدواء',
+      variant: 'danger',
+      onConfirm: async () => { const res = await deleteMedicine(id); if (!res.success) alert(res.error); },
+    });
   };
 
   const handleDeleteRecord = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا السجل العلاجي؟ (سيتم إرجاع الجرعة إلى المخزون).')) {
-      const res = await deleteMedicalRecord(id);
-      if (!res.success) alert(res.error);
-    }
+    openConfirm({
+      title: 'حذف السجل العلاجي',
+      message: 'هل أنت متأكد من حذف هذا السجل العلاجي؟ سيتم إرجاع الجرعة إلى المخزون.',
+      confirmText: 'حذف السجل',
+      variant: 'warning',
+      onConfirm: async () => { const res = await deleteMedicalRecord(id); if (!res.success) alert(res.error); },
+    });
   };
 
   return (
@@ -136,13 +150,13 @@ export default function MedicalClientView({
         <div className="flex bg-slate-200/50 p-1 rounded-xl">
           <button 
             onClick={() => setActiveTab('inventory')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'inventory' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'inventory' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
             مخزون الأدوية
           </button>
           <button 
             onClick={() => setActiveTab('records')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'records' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'records' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
             سجل العلاجات
           </button>
@@ -156,7 +170,7 @@ export default function MedicalClientView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="البحث بالأسم أو المورد أو الوحدة..."
-            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
 
@@ -164,21 +178,21 @@ export default function MedicalClientView({
           {activeTab === 'inventory' && (
             <button
               onClick={() => setIsAddMedOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition"
             >
               <Plus className="w-5 h-5" />إضافة دواء</button>
           )}
           {activeTab === 'records' && (
             <button
               onClick={() => setIsAddRecOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition"
             >
               <HeartPulse className="w-5 h-5" />تسجيل علاج</button>
           )}
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm whitespace-nowrap">
             
@@ -193,14 +207,14 @@ export default function MedicalClientView({
                     { label: 'الوحدة', key: 'unit' },
                     { label: 'تاريخ الصلاحية', key: 'expirationDate' },
                   ].map((col) => (
-                    <th key={col.key} onClick={() => handleSortMeds(col.key)} className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition select-none">
+                    <th key={col.key} onClick={() => handleSortMeds(col.key)} className="px-8 py-5 cursor-pointer hover:bg-slate-100 transition select-none">
                       <div className="flex items-center gap-1">
                         {col.label}
                         {medSortCol === col.key && (medSortDesc ? <ChevronDown className="w-4 h-4 text-emerald-500" /> : <ChevronUp className="w-4 h-4 text-emerald-500" />)}
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">الإجراءات</th>
+                  <th className="px-8 py-5 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -217,14 +231,14 @@ export default function MedicalClientView({
                     { label: 'الجرعة المعطاة', key: 'dose' },
                     { label: 'ملاحظات', key: 'notes' }
                   ].map((col) => (
-                    <th key={col.key} onClick={() => handleSortRecs(col.key)} className="px-6 py-4 cursor-pointer hover:bg-rose-100/50 transition select-none">
+                    <th key={col.key} onClick={() => handleSortRecs(col.key)} className="px-8 py-5 cursor-pointer hover:bg-rose-100/50 transition select-none">
                       <div className="flex items-center gap-1">
                         {col.label}
                         {recSortCol === col.key && (recSortDesc ? <ChevronDown className="w-4 h-4 text-rose-500" /> : <ChevronUp className="w-4 h-4 text-rose-500" />)}
                       </div>
                     </th>
                   ))}
-                  <th className="px-6 py-4 text-end">الإجراءات</th>
+                  <th className="px-8 py-5 text-end">الإجراءات</th>
                 </tr>
               </thead>
             )}
@@ -234,16 +248,16 @@ export default function MedicalClientView({
               {/* INVENTORY ROWS */}
               {activeTab === 'inventory' && filteredMedicines.map((med: MedicineData) => (
                 <tr key={med.id} className="hover:bg-slate-50 transition">
-                  <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Syringe className="w-4 h-4 text-slate-400"/> {med.name}</td>
-                  <td className="px-6 py-4 text-slate-600">{med.supplier || '-'}</td>
-                  <td className="px-6 py-4 font-bold text-emerald-600">{med.currentStock.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-slate-500">{med.unit}</td>
-                  <td className="px-6 py-4 text-slate-600">
+                  <td className="px-8 py-5 font-semibold text-slate-900 flex items-center gap-2"><Syringe className="w-4 h-4 text-slate-400"/> {med.name}</td>
+                  <td className="px-8 py-5 text-slate-600">{med.supplier || '-'}</td>
+                  <td className="px-8 py-5 font-bold text-emerald-600">{med.currentStock.toFixed(2)}</td>
+                  <td className="px-8 py-5 text-slate-500">{med.unit}</td>
+                  <td className="px-8 py-5 text-slate-600">
                     {med.expirationDate ? new Date(med.expirationDate).toLocaleDateString() : '-'}
                   </td>
-                  <td className="px-6 py-4 text-end">
-                    <button onClick={() => setEditMedData(med)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteMedicine(med.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                  <td className="px-8 py-5 text-end">
+                    <button onClick={() => setEditMedData(med)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDeleteMedicine(med.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -254,15 +268,15 @@ export default function MedicalClientView({
               {/* RECORD ROWS */}
               {activeTab === 'records' && filteredRecords.map((rec: MedicalRecordData) => (
                 <tr key={rec.id} className="hover:bg-rose-50/20 transition">
-                  <td className="px-6 py-4 text-slate-600">{new Date(rec.treatmentDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 font-medium text-slate-900">{rec.cattle.tagNumber}</td>
-                  <td className="px-6 py-4 font-medium text-indigo-700">{rec.medicine.name}</td>
-                  <td className="px-6 py-4 text-slate-700">{rec.type}</td>
-                  <td className="px-6 py-4 font-bold text-rose-600">{rec.dose.toFixed(2)} {rec.medicine.unit}</td>
-                  <td className="px-6 py-4 text-slate-500 truncate max-w-xs">{rec.notes || '-'}</td>
-                  <td className="px-6 py-4 text-end">
-                    <button onClick={() => setEditRecData(rec)} className="p-1.5 text-slate-600 hover:bg-rose-100 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteRecord(rec.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                  <td className="px-8 py-5 text-slate-600">{new Date(rec.treatmentDate).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 font-medium text-slate-900">{rec.cattle.tagNumber}</td>
+                  <td className="px-8 py-5 font-medium text-indigo-700">{rec.medicine.name}</td>
+                  <td className="px-8 py-5 text-slate-700">{rec.type}</td>
+                  <td className="px-8 py-5 font-bold text-rose-600">{rec.dose.toFixed(2)} {rec.medicine.unit}</td>
+                  <td className="px-8 py-5 text-slate-500 truncate max-w-xs">{rec.notes || '-'}</td>
+                  <td className="px-8 py-5 text-end">
+                    <button onClick={() => setEditRecData(rec)} className="p-1.5 text-slate-600 hover:bg-rose-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDeleteRecord(rec.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -281,6 +295,11 @@ export default function MedicalClientView({
       
       <AddRecordDialog isOpen={isAddRecOpen} onClose={() => setIsAddRecOpen(false)} cattle={cattleData} medicines={initialMedicines} />
       {editRecData && <EditRecordDialog isOpen={!!editRecData} onClose={() => setEditRecData(null)} record={editRecData} cattle={cattleData} medicines={initialMedicines} />}
+      <ConfirmDialog
+        isOpen={confirmState.isOpen} onClose={closeConfirm} onConfirm={confirmState.onConfirm}
+        title={confirmState.title} message={confirmState.message}
+        confirmText={confirmState.confirmText} variant={confirmState.variant}
+      />
     </>
   );
 }

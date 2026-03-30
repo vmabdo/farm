@@ -29,18 +29,22 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden flex flex-col bg-slate-50 text-slate-900`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased
+          h-screen overflow-hidden flex flex-col bg-slate-50 text-slate-900
+          print:h-auto print:min-h-screen print:overflow-visible print:block`}
       >
           <SidebarProvider>
             {/* Top header bar (hamburger + title) */}
             <TopBar />
 
             {/* Body: sidebar + main content side by side */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden print:block print:overflow-visible print:h-auto">
               <Sidebar />
-              <main className="flex-1 overflow-y-auto w-full flex flex-col relative bg-slate-50">
-                <div className="absolute inset-0 bg-grid-slate-100 bg-[size:32px_32px] pointer-events-none opacity-50" />
-                <div className="flex-1 w-full max-w-screen-2xl mx-auto p-4 sm:p-6 lg:p-8 z-10">
+              <main className="flex-1 overflow-y-auto w-full flex flex-col relative bg-slate-50 animate-in fade-in duration-500
+                               print:overflow-visible print:h-auto print:flex-none print:block print:w-full print:max-w-none print:relative print:bg-white">
+                <div className="absolute inset-0 bg-grid-slate-100 bg-[size:32px_32px] pointer-events-none opacity-50 print:hidden" />
+                <div className="flex-1 w-full max-w-screen-2xl mx-auto p-4 sm:p-6 lg:p-8 z-10
+                                print:max-w-none print:p-0 print:block print:w-full">
                   {children}
                 </div>
               </main>

@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Truck, Search } from 'lucide-react';
 import { deleteTransportRent } from '@/app/actions/transport';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 import AddTransportDialog from './AddTransportDialog';
 import EditTransportDialog from './EditTransportDialog';
@@ -19,6 +20,13 @@ export default function TransportClientView({
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editData, setEditData] = useState<TransportData | null>(null);
   const [search, setSearch] = useState('');
+
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean; title: string; message: string;
+    confirmText: string; variant: 'danger' | 'warning' | 'primary'; onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', confirmText: 'تأكيد', variant: 'danger', onConfirm: () => {} });
+  const openConfirm = (opts: Omit<typeof confirmState, 'isOpen'>) => setConfirmState({ isOpen: true, ...opts });
+  const closeConfirm = () => setConfirmState((s) => ({ ...s, isOpen: false }));
 
   // ==========================
   // Memoized Sorted Data
@@ -60,10 +68,13 @@ export default function TransportClientView({
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف سجل النقل هذا بشكل دائم؟')) {
-      const res = await deleteTransportRent(id);
-      if (!res.success) alert(res.error);
-    }
+    openConfirm({
+      title: 'حذف سجل النقل',
+      message: 'هل أنت متأكد من حذف سجل النقل هذا بشكل دائم؟',
+      confirmText: 'حذف السجل',
+      variant: 'danger',
+      onConfirm: async () => { const res = await deleteTransportRent(id); if (!res.success) alert(res.error); },
+    });
   };
 
   return (
@@ -77,17 +88,17 @@ export default function TransportClientView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="البحث في سجل النقل..."
-            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
           />
         </div>
         <button
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />تسجيل مركبة ناقلة</button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm whitespace-nowrap">
             <thead className="bg-blue-50/50 border-b border-blue-100 text-slate-600 font-medium">
@@ -100,29 +111,29 @@ export default function TransportClientView({
                   { label: 'التكلفة (ج.م)', key: 'cost' },
                   { label: 'ملاحظات', key: 'notes' }
                 ].map((col) => (
-                  <th key={col.key} onClick={() => handleSort(col.key)} className="px-6 py-4 cursor-pointer hover:bg-blue-100/50 transition select-none">
+                  <th key={col.key} onClick={() => handleSort(col.key)} className="px-8 py-5 cursor-pointer hover:bg-blue-100/50 transition select-none">
                     <div className="flex items-center gap-1">
                       {col.label}
                       {sortCol === col.key && (sortDesc ? <ChevronDown className="w-4 h-4 text-blue-500" /> : <ChevronUp className="w-4 h-4 text-blue-500" />)}
                     </div>
                   </th>
                 ))}
-                <th className="px-6 py-4 text-end">الإجراءات</th>
+                <th className="px-8 py-5 text-end">الإجراءات</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
               {filteredTransports.map((log: TransportData) => (
                 <tr key={log.id} className="hover:bg-blue-50/20 transition">
-                  <td className="px-6 py-4 text-slate-600">{new Date(log.travelDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 font-semibold text-slate-900 flex items-center gap-2"><Truck className="w-4 h-4 text-slate-400"/> {log.driverName || '-'}</td>
-                  <td className="px-6 py-4 text-slate-700">{log.vehicleType}</td>
-                  <td className="px-6 py-4 text-slate-600">{log.purpose}</td>
-                  <td className="px-6 py-4 font-bold text-slate-800">ج.م {log.cost.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-slate-500 truncate max-w-xs">{log.notes || '-'}</td>
-                  <td className="px-6 py-4 text-end">
-                    <button onClick={() => setEditData(log)} className="p-1.5 text-slate-600 hover:bg-blue-100 rounded-lg transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(log.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                  <td className="px-8 py-5 text-slate-600">{new Date(log.travelDate).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 font-semibold text-slate-900 flex items-center gap-2"><Truck className="w-4 h-4 text-slate-400"/> {log.driverName || '-'}</td>
+                  <td className="px-8 py-5 text-slate-700">{log.vehicleType}</td>
+                  <td className="px-8 py-5 text-slate-600">{log.purpose}</td>
+                  <td className="px-8 py-5 font-bold text-slate-800">ج.م {log.cost.toFixed(2)}</td>
+                  <td className="px-8 py-5 text-slate-500 truncate max-w-xs">{log.notes || '-'}</td>
+                  <td className="px-8 py-5 text-end">
+                    <button onClick={() => setEditData(log)} className="p-1.5 text-slate-600 hover:bg-blue-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(log.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -137,6 +148,11 @@ export default function TransportClientView({
       {/* Modals */}
       <AddTransportDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
       {editData && <EditTransportDialog isOpen={!!editData} onClose={() => setEditData(null)} transport={editData} />}
+      <ConfirmDialog
+        isOpen={confirmState.isOpen} onClose={closeConfirm} onConfirm={confirmState.onConfirm}
+        title={confirmState.title} message={confirmState.message}
+        confirmText={confirmState.confirmText} variant={confirmState.variant}
+      />
     </>
   );
 }

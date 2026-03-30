@@ -18,19 +18,19 @@ export default async function EquipmentPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-slate-500 mb-1">إجمالي المعدات</span>
           <span className="text-2xl font-bold text-slate-800">{equipment.length}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-emerald-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-emerald-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-emerald-600 mb-1">تعمل بحالة جيدة</span>
           <span className="text-2xl font-bold text-emerald-700">{equipment.filter(e => e.status === 'ACTIVE').length}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-amber-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-amber-600 mb-1">في الصيانة</span>
           <span className="text-2xl font-bold text-amber-700">{equipment.filter(e => e.status === 'MAINTENANCE').length}</span>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-rose-100 flex flex-col justify-center">
+        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-rose-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-rose-600 mb-1">خارج الخدمة</span>
           <span className="text-2xl font-bold text-rose-700">{equipment.filter(e => e.status === 'OUT_OF_SERVICE').length}</span>
         </div>

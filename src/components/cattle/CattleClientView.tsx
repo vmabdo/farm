@@ -8,6 +8,7 @@ import EditCattleDialog from './EditCattleDialog';
 import WeightDialog from './WeightDialog';
 import BreedsDialog from './BreedsDialog';
 import WeightHistoryDialog from './WeightHistoryDialog';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 type CattleData = any;
 
@@ -30,6 +31,22 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
   
   const [activeTab, setActiveTab] = useState<'ACTIVE' | 'SOLD' | 'DECEASED'>('ACTIVE');
   const [prices, setPrices] = useState<Record<string, number>>({});
+
+  // Confirm dialog state
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText: string;
+    variant: 'danger' | 'warning' | 'primary';
+    onConfirm: () => void;
+  }>({
+    isOpen: false, title: '', message: '', confirmText: 'تأكيد', variant: 'danger', onConfirm: () => {},
+  });
+
+  const openConfirm = (opts: Omit<typeof confirmState, 'isOpen'>) =>
+    setConfirmState({ isOpen: true, ...opts });
+  const closeConfirm = () => setConfirmState((s) => ({ ...s, isOpen: false }));
 
   // Derive sorted data from rawData on the fly
   const sortedData = useMemo(() => {
@@ -84,24 +101,35 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا السجل؟ سيتم مسح جميع البيانات المرتبطة به.')) {
-      const res = await deleteCattle(id);
-      if (!res.success) {
-        alert(res.error);
-      }
-    }
+    openConfirm({
+      title: 'حذف سجل العجل',
+      message: 'هل أنت متأكد من حذف هذا السجل؟ سيتم مسح جميع البيانات المرتبطة به بشكل دائم.',
+      confirmText: 'حذف السجل',
+      variant: 'danger',
+      onConfirm: async () => {
+        const res = await deleteCattle(id);
+        if (!res.success) alert(res.error);
+      },
+    });
   };
 
   const handleMarkDeceased = async (id: string) => {
-    if (confirm('هل أنت متأكد من تسجيل هذا العجل كنافق؟')) {
-      const res = await markDeceased(id);
-      if (!res.success) {
-        alert(res.error);
-      }
-    }
+    openConfirm({
+      title: 'تسجيل العجل كنافق',
+      message: 'هل أنت متأكد من تسجيل هذا العجل كنافق؟ لا يمكن التراجع عن هذا الإجراء.',
+      confirmText: 'تسجيل كنافق',
+      variant: 'warning',
+      onConfirm: async () => {
+        const res = await markDeceased(id);
+        if (!res.success) alert(res.error);
+      },
+    });
   };
 
   const getWeightDiff = (cattle: CattleData) => {
+    if (cattle.lastWeightDifference !== null && cattle.lastWeightDifference !== undefined) {
+      return cattle.lastWeightDifference;
+    }
     if (!cattle.weights || cattle.weights.length < 2) {
       return (cattle.currentWeight || 0) - cattle.entryWeight; 
     }
@@ -119,7 +147,7 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap ${
                 activeTab === tab
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
@@ -137,20 +165,20 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="البحث عن القطيع..."
-            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
           />
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsBreedsOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition whitespace-nowrap font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition whitespace-nowrap font-medium"
           >
             <Settings className="w-5 h-5" />
             إدارة السلالات
           </button>
           <button
             onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
             إضافة عجل
@@ -158,7 +186,7 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-sm whitespace-nowrap">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
@@ -181,7 +209,7 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                   <th
                     key={col.key}
                     onClick={() => sortBy(col.key)}
-                    className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition select-none"
+                    className="px-8 py-5 cursor-pointer hover:bg-slate-100 transition select-none"
                   >
                     <div className="flex items-center gap-1">
                       {col.label}
@@ -191,7 +219,7 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                     </div>
                   </th>
                 ))}
-                <th className="px-6 py-4 text-end">الإجراءات</th>
+                <th className="px-8 py-5 text-end">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -201,21 +229,21 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                 
                 return (
                   <tr key={cattle.id} className={`transition border-s-4 ${cattle.status === 'DECEASED' ? 'border-rose-500 bg-rose-50' : 'border-transparent hover:bg-slate-50'}`}>
-                    <td className="px-6 py-4 font-semibold text-slate-900">{cattle.tagNumber}</td>
-                    <td className="px-6 py-4 text-slate-600">{cattle.breed?.name || '-'}</td>
-                    <td className="px-6 py-4 text-slate-600">{new Date(cattle.entryDate).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-slate-600">{cattle.entryWeight.toFixed(2)}</td>
-                    <td className="px-6 py-4 font-medium text-slate-800">{cattle.currentWeight?.toFixed(2) || '-'}</td>
-                    <td className={`px-6 py-4 font-medium ${diffColor}`}>
+                    <td className="px-8 py-5 font-semibold text-slate-900">{cattle.tagNumber}</td>
+                    <td className="px-8 py-5 text-slate-600">{cattle.breed?.name || '-'}</td>
+                    <td className="px-8 py-5 text-slate-600">{new Date(cattle.entryDate).toLocaleDateString()}</td>
+                    <td className="px-8 py-5 text-slate-600">{cattle.entryWeight.toFixed(2)}</td>
+                    <td className="px-8 py-5 font-medium text-slate-800">{cattle.currentWeight?.toFixed(2) || '-'}</td>
+                    <td className={`px-8 py-5 font-medium ${diffColor}`}>
                       {diff > 0 ? '+' : ''}{diff.toFixed(2)}
                     </td>
                     {activeTab === 'SOLD' ? (
                       <>
-                        <td className="px-6 py-4 font-semibold text-slate-800">{cattle.buyerName || '-'}</td>
-                        <td className="px-6 py-4 font-mono text-slate-600">{cattle.invoiceSerialNumber ? `#INV-${cattle.invoiceSerialNumber}` : '-'}</td>
+                        <td className="px-8 py-5 font-semibold text-slate-800">{cattle.buyerName || '-'}</td>
+                        <td className="px-8 py-5 font-mono text-slate-600">{cattle.invoiceSerialNumber ? `#INV-${cattle.invoiceSerialNumber}` : '-'}</td>
                       </>
                     ) : (
-                      <td className="px-6 py-4">
+                      <td className="px-8 py-5">
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
@@ -232,7 +260,7 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                         </div>
                       </td>
                     )}
-                    <td className="px-6 py-4">
+                    <td className="px-8 py-5">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         cattle.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
                         cattle.status === 'SOLD' ? 'bg-amber-100 text-amber-700' :
@@ -241,32 +269,34 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                         {cattle.status === 'ACTIVE' ? 'القطيع النشط' : cattle.status === 'SOLD' ? 'مباع' : 'نافق'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-end flex items-center justify-end gap-2">
+                    <td className="px-8 py-5 text-end flex items-center justify-end gap-2">
                        <button
                         onClick={() => setHistoryCattleData(cattle)}
-                        className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition tooltip"
+                        className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-xl transition tooltip"
                         title="سجل الأوزان"
                       >
                         <List className="w-4 h-4" />
                       </button>
                        <button
                         onClick={() => { setWeightCattleData(cattle); setIsWeightOpen(true); }}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition tooltip"
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-xl transition tooltip"
                         title="Add Weight"
                       >
                         <Scale className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => { setEditCattleData(cattle); setIsEditOpen(true); }}
-                        className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition"
-                        title="Edit Record"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+                      {cattle.status !== 'DECEASED' && cattle.status !== 'SOLD' && (
+                        <button
+                          onClick={() => { setEditCattleData(cattle); setIsEditOpen(true); }}
+                          className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                          title="تعديل (Edit)"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
                       {cattle.status !== 'DECEASED' && cattle.status !== 'SOLD' && (
                         <button
                           onClick={() => handleMarkDeceased(cattle.id)}
-                          className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-700 rounded-lg transition tooltip"
+                          className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-700 rounded-xl transition tooltip"
                           title="تسجيل نافق"
                         >
                           <Skull className="w-4 h-4" />
@@ -274,7 +304,7 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                       )}
                       <button
                         onClick={() => handleDelete(cattle.id)}
-                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"
                         title="Delete Record"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -315,6 +345,15 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
       {historyCattleData && (
         <WeightHistoryDialog isOpen={!!historyCattleData} onClose={() => setHistoryCattleData(null)} cattle={historyCattleData} />
       )}
+      <ConfirmDialog
+        isOpen={confirmState.isOpen}
+        onClose={closeConfirm}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        variant={confirmState.variant}
+      />
     </>
   );
 }

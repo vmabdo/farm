@@ -1,53 +1,107 @@
-import { ChartLine, Wheat, Users, Syringe, Truck } from 'lucide-react';
 import prisma from '@/lib/prisma';
+import DashboardClientView from '@/components/dashboard/DashboardClientView';
+import { subMonths, format } from 'date-fns';
+import { ar } from 'date-fns/locale';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  title: 'لوحة القيادة | Farm ERP',
+};
+
 export default async function Home() {
-  const [cattleCount, activeWorkers, transportCount] = await Promise.all([
+  const [revenue, activeCattleCount, feedItems, workerCount, invoices, cattleDistribution] = await Promise.all([
+    // Total Revenue
+    prisma.invoice.aggregate({ _sum: { netAmount: true } }),
+    // Active Cattle Count
     prisma.cattle.count({ where: { status: 'ACTIVE' } }),
+    // Total Feed Stock
+    prisma.feedItem.findMany({ select: { id: true, name: true, currentStock: true } }),
+    // Total Workers
     prisma.worker.count({ where: { active: true } }),
-    prisma.transportRent.count(),
+    // Invoices for last 6 months (Sales Data)
+    prisma.invoice.findMany({
+      where: { invoiceDate: { gte: subMonths(new Date(), 6) } },
+      select: { invoiceDate: true, netAmount: true, clientName: true, serialNumber: true }
+    }),
+    // Cattle Status Distribution
+    prisma.cattle.groupBy({
+      by: ['status'],
+      _count: { status: true },
+    })
   ]);
 
-  // Aggregate feed stock (sum of currentStock)
-  const feedItems = await prisma.feedItem.findMany();
-  const feedStock = feedItems.reduce((acc: number, item: any) => acc + item.currentStock, 0);
+  // Transform Sales Data for Chart
+  const salesMap = new Map();
+  for (let i = 5; i >= 0; i--) {
+    const d = subMonths(new Date(), i);
+    salesMap.set(format(d, 'MMM yyyy', { locale: ar }), 0);
+  }
 
-  // Medical needs could be based on something logic-wise, just counting all records for now
-  const pendingMedical = await prisma.medicalRecord.count();
+  invoices.forEach((inv) => {
+    const month = format(new Date(inv.invoiceDate), 'MMM yyyy', { locale: ar });
+    if (salesMap.has(month)) {
+      salesMap.set(month, salesMap.get(month) + inv.netAmount);
+    }
+  });
 
-  const stats = [
-    { name: 'إجمالي القطيع', value: cattleCount.toString(), icon: ChartLine, color: 'text-emerald-500', bg: 'bg-emerald-100' },
-    { name: 'مواد العلف', value: feedStock.toString(), icon: Wheat, color: 'text-amber-500', bg: 'bg-amber-100' },
-    { name: 'العمال النشطين', value: activeWorkers.toString(), icon: Users, color: 'text-blue-500', bg: 'bg-blue-100' },
-    { name: 'السجلات الطبية', value: pendingMedical.toString(), icon: Syringe, color: 'text-rose-500', bg: 'bg-rose-100' },
-    { name: 'عمليات النقل', value: transportCount.toString(), icon: Truck, color: 'text-indigo-500', bg: 'bg-indigo-100' },
-  ];
+  const salesData = Array.from(salesMap.entries()).map(([month, total]) => ({ month, total }));
+
+  // Transform Cattle Distribution for Pie Chart
+  const distMap: Record<string, number> = { 'طبيعي (نشط)': 0, 'مباع': 0, 'نافق': 0 };
+  cattleDistribution.forEach((c) => {
+    if (c.status === 'ACTIVE') distMap['طبيعي (نشط)'] = c._count.status;
+    else if (c.status === 'SOLD') distMap['مباع'] = c._count.status;
+    else if (c.status === 'DECEASED') distMap['نافق'] = c._count.status;
+  });
+  
+  const cattleDistData = Object.entries(distMap).map(([name, value]) => ({ name, value }));
+
+  // Recent Activity Merge
+  // Get latest 5 calves
+  const recentCalves = await prisma.cattle.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 5,
+    include: { breed: true }
+  });
+
+  // Get recent 5 invoices (using already fetched ones or fetching again)
+  const recentInvoicesRaw = await prisma.invoice.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 5
+  });
+
+  // Merge and sort
+  const combined = [
+    ...recentCalves.map(c => ({
+      type: 'CATTLE',
+      date: c.createdAt,
+      title: 'تمت إضافة عجل جديد',
+      subtitle: `رقم البطاقة: ${c.tagNumber} | السلالة: ${c.breed?.name || 'غير محدد'}`,
+      amountStr: `${c.entryWeight} كجم`
+    })),
+    ...recentInvoicesRaw.map(inv => ({
+      type: 'INVOICE',
+      date: inv.createdAt,
+      title: `تم إنشاء فاتورة #${inv.serialNumber}`,
+      subtitle: `العميل: ${inv.clientName}`,
+      amountStr: `${inv.netAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })} ج.م`
+    }))
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+
+  const dashboardData = {
+    revenue: revenue._sum.netAmount || 0,
+    activeCattleCount,
+    feedItems,
+    workerCount,
+    salesData,
+    cattleDistribution: cattleDistData,
+    recentActivity: combined
+  };
 
   return (
-    <div className="space-y-6">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">نظرة عامة</h1>
-        <p className="text-slate-500 mt-2">مرحباً بك في نظام إدارة المزرعة المتكامل</p>
-      </header>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
-        {stats.map((stat) => (
-          <div key={stat.name} className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-            <dt>
-              <div className={`absolute rounded-xl p-3 ${stat.bg}`}>
-                <stat.icon className={`h-6 w-6 ${stat.color}`} aria-hidden="true" />
-              </div>
-              <p className="ms-16 truncate text-sm font-medium text-slate-500">{stat.name}</p>
-            </dt>
-            <dd className="ms-16 flex items-baseline pb-1">
-              <p className="text-2xl font-semibold text-slate-900">{stat.value}</p>
-            </dd>
-          </div>
-        ))}
-      </div>
-
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto mt-16 sm:mt-0">
+      <DashboardClientView data={dashboardData} />
     </div>
   );
 }

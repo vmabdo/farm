@@ -15,7 +15,7 @@ export default function TopBar() {
       <button
         onClick={toggle}
         aria-label="Toggle sidebar"
-        className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+        className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
       >
         <Menu className="w-5 h-5" />
       </button>

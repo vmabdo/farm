@@ -25,7 +25,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
           <h2 className="text-xl font-bold text-slate-800">تعديل بيانات المركبة</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
@@ -41,7 +41,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
               type="date"
               defaultValue={new Date(transport.travelDate).toISOString().split('T')[0]}
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
             />
           </div>
           <div>
@@ -50,7 +50,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
               name="driverName" 
               required 
               defaultValue={transport.driverName || ''}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
             />
           </div>
           <div>
@@ -59,7 +59,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
               name="vehicleType" 
               required 
               defaultValue={transport.vehicleType}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
             />
           </div>
           <div>
@@ -68,7 +68,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
               name="purpose" 
               required 
               defaultValue={transport.purpose}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
             />
           </div>
           <div>
@@ -80,7 +80,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
               step="0.01"
               required 
               defaultValue={transport.cost}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
             />
           </div>
           <div>
@@ -89,7 +89,7 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
               name="notes"
               rows={2} 
               defaultValue={transport.notes || ''}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none" 
             />
           </div>
 
@@ -97,12 +97,12 @@ export default function EditTransportDialog({ isOpen, onClose, transport }: { is
             <button 
               type="button" 
               onClick={onClose}
-              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
+              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition"
             >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
-              className="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
             >
               {loading ? 'جاري التحديث...' : 'تحديث البيانات'}
             </button>

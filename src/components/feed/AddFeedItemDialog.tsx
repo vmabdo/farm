@@ -25,7 +25,7 @@ export default function AddFeedItemDialog({ isOpen, onClose }: { isOpen: boolean
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
           <h2 className="text-xl font-bold text-slate-800">إضافة نوع علف</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
@@ -39,7 +39,7 @@ export default function AddFeedItemDialog({ isOpen, onClose }: { isOpen: boolean
             <input 
               name="name" 
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
               placeholder="مثال: ذرة صويا"
             />
           </div>
@@ -48,7 +48,7 @@ export default function AddFeedItemDialog({ isOpen, onClose }: { isOpen: boolean
             <input 
               name="type" 
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
               placeholder="مثال: حبوب، سيلاج"
             />
           </div>
@@ -57,7 +57,7 @@ export default function AddFeedItemDialog({ isOpen, onClose }: { isOpen: boolean
             <select
               name="unit"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
             >
               <option value="KG">كجم (KG)</option>
               <option value="TON">طن (TON)</option>
@@ -71,7 +71,7 @@ export default function AddFeedItemDialog({ isOpen, onClose }: { isOpen: boolean
               type="number"
               min="0"
               step="0.01"
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
               placeholder="0.00"
             />
           </div>
@@ -80,12 +80,12 @@ export default function AddFeedItemDialog({ isOpen, onClose }: { isOpen: boolean
             <button 
               type="button" 
               onClick={onClose}
-              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
+              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition"
             >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
-              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
+              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition disabled:opacity-50"
             >
               {loading ? 'جاري الحفظ...' : 'إضافة'}
             </button>

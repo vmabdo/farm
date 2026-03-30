@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChartLine, Wheat, Users, Syringe, Truck, LayoutDashboard, Settings, X, Wrench, Receipt } from 'lucide-react';
+import { ChartLine, Wheat, Users, Syringe, Truck, LayoutDashboard, Settings, X, Wrench, Receipt, FileText } from 'lucide-react';
 import LogoutButton from './LogoutButton';
 import { useSidebar } from './SidebarContext';
 
@@ -13,7 +13,8 @@ const navItems = [
   { name: 'الرعاية الطبية', href: '/medical', icon: Syringe },
   { name: 'النقل والمصروفات', href: '/transport', icon: Truck },
   { name: 'المعدات والآلات', href: '/equipment', icon: Wrench },
-  { name: 'الفواتير والتقارير', href: '/invoices', icon: Receipt },
+  { name: 'الفواتير', href: '/invoices', icon: Receipt },
+  { name: 'التقارير', href: '/reports', icon: FileText },
   { name: 'الإعدادات', href: '/settings', icon: Settings },
 ];
 
@@ -58,7 +59,7 @@ export default function Sidebar() {
             {/* Close button — mobile only */}
             <button
               onClick={close}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition md:hidden"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition md:hidden"
               aria-label="Close sidebar"
             >
               <X className="w-4 h-4" />
@@ -78,7 +79,7 @@ export default function Sidebar() {
                   href={item.href}
                   onClick={close}
                   className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                    flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
                     ${isActive
                       ? 'bg-emerald-500/10 text-emerald-400'
                       : 'text-slate-400 hover:bg-slate-800 hover:text-white'

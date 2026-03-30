@@ -25,7 +25,7 @@ export default function EditPayrollDialog({ isOpen, onClose, payroll }: { isOpen
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
           <h2 className="text-xl font-bold text-slate-800">تعديل سجل راتب</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
@@ -39,7 +39,7 @@ export default function EditPayrollDialog({ isOpen, onClose, payroll }: { isOpen
             <input 
               disabled
               value={payroll.worker.name}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-500 cursor-not-allowed" 
             />
           </div>
           <div>
@@ -48,7 +48,7 @@ export default function EditPayrollDialog({ isOpen, onClose, payroll }: { isOpen
               name="type"
               required
               defaultValue={payroll.type}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
             >
               <option value="SALARY">راتب أساسي</option>
               <option value="BONUS">مكافأة</option>
@@ -64,7 +64,7 @@ export default function EditPayrollDialog({ isOpen, onClose, payroll }: { isOpen
               step="0.01"
               required 
               defaultValue={payroll.amount}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
             />
           </div>
           <div>
@@ -74,7 +74,7 @@ export default function EditPayrollDialog({ isOpen, onClose, payroll }: { isOpen
               type="date"
               defaultValue={new Date(payroll.paymentDate).toISOString().split('T')[0]}
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
             />
           </div>
           <div>
@@ -83,7 +83,7 @@ export default function EditPayrollDialog({ isOpen, onClose, payroll }: { isOpen
               name="notes"
               rows={2} 
               defaultValue={payroll.notes || ''}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition resize-none" 
             />
           </div>
 
@@ -91,12 +91,12 @@ export default function EditPayrollDialog({ isOpen, onClose, payroll }: { isOpen
             <button 
               type="button" 
               onClick={onClose}
-              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition"
+              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition"
             >إلغاء</button>
             <button 
               type="submit" 
               disabled={loading}
-              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
+              className="px-5 py-2 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition disabled:opacity-50"
             >
               {loading ? 'جاري التحديث...' : 'تحديث الدفعة'}
             </button>
