@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Scale, Search, List, Settings } from 'lucide-react';
-import { deleteCattle } from '@/app/actions/cattle';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Scale, Search, List, Settings, Skull } from 'lucide-react';
+import { deleteCattle, markDeceased } from '@/app/actions/cattle';
 import AddCattleDialog from './AddCattleDialog';
 import EditCattleDialog from './EditCattleDialog';
 import WeightDialog from './WeightDialog';
@@ -92,6 +92,15 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
     }
   };
 
+  const handleMarkDeceased = async (id: string) => {
+    if (confirm('هل أنت متأكد من تسجيل هذا العجل كنافق؟')) {
+      const res = await markDeceased(id);
+      if (!res.success) {
+        alert(res.error);
+      }
+    }
+  };
+
   const getWeightDiff = (cattle: CattleData) => {
     if (!cattle.weights || cattle.weights.length < 2) {
       return (cattle.currentWeight || 0) - cattle.entryWeight; 
@@ -161,7 +170,12 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                   { label: 'الوزن المبدئي (كجم)', key: 'entryWeight' },
                   { label: 'الوزن الحالي (كجم)', key: 'currentWeight' },
                   { label: 'آخر فرق (كجم)', key: 'weights' }, // custom sort
-                  { label: 'التقييم (السعر/كجم)', key: 'val' },
+                  ...(activeTab === 'SOLD' ? [
+                    { label: 'المشتري', key: 'buyerName' },
+                    { label: 'الفاتورة', key: 'invoiceSerialNumber' }
+                  ] : [
+                    { label: 'التقييم (السعر/كجم)', key: 'val' }
+                  ]),
                   { label: 'الحالة', key: 'status' }
                 ].map((col) => (
                   <th
@@ -195,22 +209,29 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                     <td className={`px-6 py-4 font-medium ${diffColor}`}>
                       {diff > 0 ? '+' : ''}{diff.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          placeholder={cattle.breed?.pricePerKg?.toFixed(2) || "0.00"}
-                          value={prices[cattle.id] || ''}
-                          onChange={(e) => setPrices(prev => ({ ...prev, [cattle.id]: parseFloat(e.target.value) }))}
-                          className="w-20 px-2 py-1 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-emerald-500"
-                        />
-                        <span className="font-semibold text-slate-700">
-                          = ج.م {((prices[cattle.id] || cattle.breed?.pricePerKg || 0) * (cattle.currentWeight || cattle.entryWeight)).toFixed(2)}
-                        </span>
-                      </div>
-                    </td>
+                    {activeTab === 'SOLD' ? (
+                      <>
+                        <td className="px-6 py-4 font-semibold text-slate-800">{cattle.buyerName || '-'}</td>
+                        <td className="px-6 py-4 font-mono text-slate-600">{cattle.invoiceSerialNumber ? `#INV-${cattle.invoiceSerialNumber}` : '-'}</td>
+                      </>
+                    ) : (
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder={cattle.breed?.pricePerKg?.toFixed(2) || "0.00"}
+                            value={prices[cattle.id] || ''}
+                            onChange={(e) => setPrices(prev => ({ ...prev, [cattle.id]: parseFloat(e.target.value) }))}
+                            className="w-20 px-2 py-1 border border-slate-200 rounded text-sm focus:ring-1 focus:ring-emerald-500"
+                          />
+                          <span className="font-semibold text-slate-700">
+                            = ج.م {((prices[cattle.id] || cattle.breed?.pricePerKg || 0) * (cattle.currentWeight || cattle.entryWeight)).toFixed(2)}
+                          </span>
+                        </div>
+                      </td>
+                    )}
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         cattle.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
@@ -242,6 +263,15 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
+                      {cattle.status !== 'DECEASED' && cattle.status !== 'SOLD' && (
+                        <button
+                          onClick={() => handleMarkDeceased(cattle.id)}
+                          className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-700 rounded-lg transition tooltip"
+                          title="تسجيل نافق"
+                        >
+                          <Skull className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(cattle.id)}
                         className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"

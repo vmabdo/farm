@@ -23,19 +23,21 @@ model Breed {
 
 // 2. Cattle & Weights Management
 model Cattle {
-  id            String         @id @default(cuid())
-  tagNumber     String         @unique
-  breedId       String?
-  breed         Breed?         @relation(fields: [breedId], references: [id])
-  entryDate     DateTime       @default(now())
-  entryWeight   Float
-  currentWeight Float?
-  status        String         @default("ACTIVE") // ACTIVE, SOLD, DECEASED
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                  String         @id @default(cuid())
+  tagNumber           String         @unique
+  breedId             String?
+  breed               Breed?         @relation(fields: [breedId], references: [id])
+  entryDate           DateTime       @default(now())
+  entryWeight         Float
+  currentWeight       Float?
+  status              String         @default("ACTIVE") // ACTIVE, SOLD, DECEASED
+  buyerName           String?
+  invoiceSerialNumber Int?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 
-  weights       WeightRecord[]
-  medical       MedicalRecord[]
+  weights             WeightRecord[]
+  medical             MedicalRecord[]
 }
 
 model WeightRecord {

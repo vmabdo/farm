@@ -68,16 +68,16 @@ export default function EditCattleDialog({ isOpen, onClose, cattle, breeds = [] 
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">الحالة *</label>
-            <select
-              name="status"
-              required
-              defaultValue={cattle.status}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
-            >
-              <option value="ACTIVE">القطيع النشط</option>
-              <option value="SOLD">مُباع</option>
-              <option value="DECEASED">نافق</option>
-            </select>
+              <select
+                name="status"
+                required
+                defaultValue={cattle.status}
+                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+              >
+                <option value="ACTIVE">القطيع النشط</option>
+                {cattle.status === 'SOLD' && <option value="SOLD">مُباع</option>}
+                <option value="DECEASED">نافق</option>
+              </select>
           </div>
 
           <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100">

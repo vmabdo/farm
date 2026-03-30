@@ -129,3 +129,17 @@ export async function addWeightRecord(cattleId: string, formData: FormData) {
     return { success: false, error: 'Failed to add weight record.' };
   }
 }
+
+export async function markDeceased(id: string) {
+  try {
+    await prisma.cattle.update({
+      where: { id },
+      data: { status: 'DECEASED' }
+    });
+    revalidatePath('/cattle');
+    return { success: true };
+  } catch (error) {
+    console.error('Error marking deceased:', error);
+    return { success: false, error: 'Failed to update cattle status.' };
+  }
+}

@@ -14,22 +14,40 @@ export async function createInvoice(formData: FormData) {
     const items = JSON.parse(itemsStr);
     
     // Calculate total amount from items
-    const totalAmount = items.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0);
+    const totalAmount = items.reduce((sum: number, item: any) => sum + Number(item.price), 0);
     const netAmount = Math.max(0, totalAmount - discount);
 
-    await prisma.invoice.create({
-      data: {
-        clientName,
-        invoiceDate,
-        totalAmount,
-        discount,
-        netAmount,
-        items: itemsStr,
-        notes,
-      },
+    await prisma.$transaction(async (tx) => {
+      // 1. Create Invoice
+      const invoice = await tx.invoice.create({
+        data: {
+          clientName,
+          invoiceDate,
+          totalAmount,
+          discount,
+          netAmount,
+          items: itemsStr,
+          notes,
+        },
+      });
+
+      // 2. Update Cattle Status
+      for (const item of items) {
+        if (item.name) {
+          await tx.cattle.updateMany({
+            where: { tagNumber: item.name },
+            data: { 
+              status: 'SOLD',
+              buyerName: clientName,
+              invoiceSerialNumber: invoice.serialNumber
+            }
+          });
+        }
+      }
     });
 
     revalidatePath('/invoices');
+    revalidatePath('/cattle');
     return { success: true };
   } catch (error) {
     console.error('Error creating invoice:', error);

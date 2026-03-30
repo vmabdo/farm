@@ -32,7 +32,7 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
         </div>
 
         {/* ===================== PRINTABLE A4 AREA ===================== */}
-        <div className="flex-1 p-8 sm:p-12 print:p-8 bg-white text-slate-900 mx-auto w-full max-w-[210mm]">
+        <div dir="rtl" className="flex-1 p-8 sm:p-12 print:p-8 bg-white text-slate-900 mx-auto w-full max-w-[210mm] min-h-[297mm] shadow-inner print:shadow-none">
           
           {/* Header */}
           <div className="flex justify-between items-start mb-12 border-b-2 border-slate-900 pb-8">
@@ -45,10 +45,10 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
                 <p className="text-slate-500 font-medium">مزرعة نموذجية ممتازة</p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left">
               <h2 className="text-4xl font-black text-slate-200 tracking-widest uppercase mb-2">فاتورة</h2>
               <p className="text-lg text-slate-600 font-bold">{invoiceNumber}</p>
-              <p className="text-sm text-slate-600">التاريخ: {new Date(invoice.invoiceDate).toLocaleDateString()}</p>
+              <p className="text-sm text-slate-600">التاريخ: {new Date(invoice.invoiceDate).toLocaleDateString('ar-EG')}</p>
             </div>
           </div>
 
@@ -59,7 +59,7 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
               <h3 className="text-xl font-bold text-slate-900">{invoice.clientName}</h3>
               <p className="text-slate-600 mt-1">عميل مميز</p>
             </div>
-            <div className="text-right">
+            <div className="text-left">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">الدفع إلى:</p>
               <h3 className="text-lg font-bold text-slate-900">اسم الشركة</h3>
               <p className="text-slate-600 mt-1">123 طريق الزراعة<br/>القاهرة، مصر</p>
@@ -68,14 +68,14 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
 
           {/* Table */}
           <div className="mb-8 border border-slate-200 rounded-xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-right border-collapse">
               <thead className="bg-slate-100 text-sm font-bold uppercase tracking-wider text-slate-600">
                 <tr>
                   <th className="px-6 py-4 border-b border-slate-200 text-center w-16">#</th>
                   <th className="px-6 py-4 border-b border-slate-200">البيان</th>
-                  <th className="px-6 py-4 border-b border-slate-200 text-right w-32">الكمية</th>
-                  <th className="px-6 py-4 border-b border-slate-200 text-right w-32">سعر الوحدة</th>
-                  <th className="px-6 py-4 border-b border-slate-200 text-right w-40">المجموع</th>
+                  <th className="px-6 py-4 border-b border-slate-200 text-left w-32">الكمية</th>
+                  <th className="px-6 py-4 border-b border-slate-200 text-left w-32">سعر الوحدة</th>
+                  <th className="px-6 py-4 border-b border-slate-200 text-left w-40">المجموع</th>
                 </tr>
               </thead>
               <tbody className="text-slate-700 divide-y divide-slate-100">
@@ -83,9 +83,9 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
                   <tr key={idx}>
                     <td className="px-6 py-4 text-center text-slate-400 font-medium">{idx + 1}</td>
                     <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
-                    <td className="px-6 py-4 text-right">{item.quantity}</td>
-                    <td className="px-6 py-4 text-right">{item.price.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right font-semibold">{(item.quantity * item.price).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-left">{item.quantity}</td>
+                    <td className="px-6 py-4 text-left">{(item.quantity ? (item.price / item.quantity) : 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-left font-semibold">{Number(item.price).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -94,7 +94,7 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
 
           {/* Summaries */}
           <div className="flex justify-between items-start">
-            <div className="w-1/2 pe-8">
+            <div className="w-1/2 ps-8">
               {invoice.notes && (
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ملاحظات / شروط:</p>

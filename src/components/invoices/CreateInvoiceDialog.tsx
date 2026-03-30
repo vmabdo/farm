@@ -25,7 +25,7 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
     setItems(newItems);
   };
 
-  const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+  const subtotal = items.reduce((sum, item) => sum + Number(item.price), 0);
   const netAmount = Math.max(0, subtotal - discount);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -92,8 +92,11 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
               <div className="p-4 space-y-3">
                 {items.map((item, idx) => (
                   <div key={idx} className="flex gap-3 items-start">
-                    <div className="flex-1">
-                      <select 
+                    <div className="flex-1 relative">
+                      <input 
+                        type="text"
+                        list="cattle-list"
+                        placeholder="ابحث برقم البطاقة (التاج)..."
                         value={item.name} 
                         onChange={(e) => {
                           const tag = e.target.value;
@@ -103,20 +106,21 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
                           if (calf) {
                             const pricePerKg = calf.breed?.pricePerKg || 0;
                             const weight = calf.currentWeight || calf.entryWeight || 0;
+                            newItems[idx].quantity = weight;
                             newItems[idx].price = parseFloat((pricePerKg * weight).toFixed(2));
                           }
                           setItems(newItems);
                         }} 
                         className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 bg-white" 
                         required
-                      >
-                        <option value="">اختر العجل...</option>
+                      />
+                      <datalist id="cattle-list">
                         {cattle?.map(c => (
                           <option key={c.id} value={c.tagNumber}>
                             عجل {c.tagNumber} {c.breed?.name ? `(${c.breed.name})` : ''} - {(c.currentWeight || c.entryWeight).toFixed(2)} كجم
                           </option>
                         ))}
-                      </select>
+                      </datalist>
                     </div>
                     <div className="w-24">
                       <input 
@@ -125,8 +129,8 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
                         step="0.01"
                         placeholder="الكمية" 
                         value={item.quantity} 
-                        onChange={(e) => handleChange(idx, 'quantity', parseFloat(e.target.value) || 0)} 
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500" 
+                        readOnly
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500 cursor-not-allowed focus:outline-none focus:ring-0" 
                         required
                       />
                     </div>
@@ -137,8 +141,8 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
                         step="0.01"
                         placeholder="السعر" 
                         value={item.price} 
-                        onChange={(e) => handleChange(idx, 'price', parseFloat(e.target.value) || 0)} 
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-blue-500" 
+                        readOnly
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500 cursor-not-allowed focus:outline-none focus:ring-0" 
                         required
                       />
                     </div>
