@@ -10,13 +10,15 @@ export const metadata = {
 };
 
 export default async function Home() {
-  const [revenue, activeCattleCount, feedItems, workerCount, invoices, cattleDistribution] = await Promise.all([
+  const [revenue, activeCattleCount, feedPurchased, feedConsumed, workerCount, invoices, cattleDistribution] = await Promise.all([
     // Total Revenue
     prisma.invoice.aggregate({ _sum: { netAmount: true } }),
     // Active Cattle Count
     prisma.cattle.count({ where: { status: 'ACTIVE' } }),
-    // Total Feed Stock
-    prisma.feedItem.findMany({ select: { id: true, name: true, currentStock: true } }),
+    // Total Feed Purchased (sum of all FeedPurchaseOrder quantities)
+    prisma.feedPurchaseOrder.aggregate({ _sum: { quantity: true } }),
+    // Total Feed Consumed (sum of all FeedConsumption quantities)
+    prisma.feedConsumption.aggregate({ _sum: { quantity: true } }),
     // Total Workers
     prisma.worker.count({ where: { active: true } }),
     // Invoices for last 6 months (Sales Data)
@@ -30,6 +32,12 @@ export default async function Home() {
       _count: { status: true },
     })
   ]);
+
+  // Calculate current feed stock: purchased minus consumed (gracefully handle nulls)
+  const totalFeedStock = Math.max(
+    0,
+    (feedPurchased._sum.quantity ?? 0) - (feedConsumed._sum.quantity ?? 0)
+  );
 
   // Transform Sales Data for Chart
   const salesMap = new Map();
@@ -90,9 +98,9 @@ export default async function Home() {
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
   const dashboardData = {
-    revenue: revenue._sum.netAmount || 0,
+    revenue: revenue._sum.netAmount ?? 0,
     activeCattleCount,
-    feedItems,
+    totalFeedStock,
     workerCount,
     salesData,
     cattleDistribution: cattleDistData,

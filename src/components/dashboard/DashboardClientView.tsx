@@ -23,15 +23,14 @@ export default function DashboardClientView({ data }: { data: any }) {
   const {
     revenue,
     activeCattleCount,
-    feedItems,
+    totalFeedStock,
     workerCount,
     salesData,
     cattleDistribution,
     recentActivity
   } = data;
 
-  const totalFeedStock = feedItems.reduce((acc: number, item: any) => acc + item.currentStock, 0);
-  const lowStockItems = feedItems.filter((item: any) => item.currentStock < 500); // 500 threshold
+  const isLowStock = totalFeedStock < 100; // warn when below 100 units
 
   return (
     <div className="space-y-6">
@@ -76,7 +75,7 @@ export default function DashboardClientView({ data }: { data: any }) {
         </div>
 
         {/* Total Feed Stock */}
-        <div className={`relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border ${lowStockItems.length > 0 ? 'border-amber-200' : 'border-slate-100'} hover:shadow-md transition-shadow`}>
+        <div className={`relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm border ${isLowStock ? 'border-amber-200' : 'border-slate-100'} hover:shadow-md transition-shadow`}>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <div className="rounded-xl p-3 bg-amber-50 text-amber-600">
@@ -85,15 +84,15 @@ export default function DashboardClientView({ data }: { data: any }) {
               <div>
                 <p className="text-sm font-medium text-slate-500">مخزون الأعلاف</p>
                 <div className="flex items-baseline gap-1 mt-1">
-                  <h3 className="text-2xl font-black text-slate-900">{totalFeedStock.toLocaleString()}</h3>
-                  <span className="text-sm text-slate-500">كجم</span>
+                  <h3 className="text-2xl font-black text-slate-900">{totalFeedStock.toLocaleString('en-US', { maximumFractionDigits: 2 })}</h3>
+                  <span className="text-sm text-slate-500">وحدة</span>
                 </div>
               </div>
             </div>
-            {lowStockItems.length > 0 && (
-              <div className="bg-amber-100 text-amber-700 px-2 py-1 rounded-md flex items-center gap-1 text-xs font-bold" title={lowStockItems.map((i: any) => i.name).join(', ')}>
+            {isLowStock && (
+              <div className="bg-amber-100 text-amber-700 px-2 py-1 rounded-md flex items-center gap-1 text-xs font-bold">
                 <AlertTriangle className="w-3 h-3" />
-                تنبيه النقص
+                مخزون منخفض
               </div>
             )}
           </div>
