@@ -8,6 +8,9 @@ export const metadata = {
 export default async function EquipmentPage() {
   const equipment = await prisma.equipment.findMany({
     orderBy: { name: 'asc' },
+    include: {
+      maintenances: { orderBy: { date: 'desc' } },
+    },
   });
 
   return (

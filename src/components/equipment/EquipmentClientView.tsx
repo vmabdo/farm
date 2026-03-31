@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Search, Wrench } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Search, Wrench, ClipboardList } from 'lucide-react';
 import { deleteEquipment } from '@/app/actions/equipment';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 import AddEquipmentDialog from './AddEquipmentDialog';
 import EditEquipmentDialog from './EditEquipmentDialog';
+import MaintenanceLogModal from './MaintenanceLogModal';
 
 type EquipmentData = any;
 
@@ -15,6 +16,7 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
   const [sortDesc, setSortDesc] = useState<boolean>(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editData, setEditData] = useState<EquipmentData | null>(null);
+  const [maintenanceEquipment, setMaintenanceEquipment] = useState<EquipmentData | null>(null);
   const [search, setSearch] = useState('');
 
   const [confirmState, setConfirmState] = useState<{
@@ -27,14 +29,12 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
   // ==========================
   // Memoized Sorted Data
   // ==========================
-  const sortedTransports = useMemo(() => {
+  const sortedEquipment = useMemo(() => {
     return [...initialEquipment].sort((a, b) => {
       let valA = a[sortCol];
       let valB = b[sortCol];
-      
       if (typeof valA === 'string') valA = valA.toLowerCase();
       if (typeof valB === 'string') valB = valB.toLowerCase();
-
       if (valA < valB) return sortDesc ? 1 : -1;
       if (valA > valB) return sortDesc ? -1 : 1;
       return 0;
@@ -43,12 +43,12 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
 
   const filteredEquipment = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return sortedTransports;
-    return sortedTransports.filter((t) =>
+    if (!q) return sortedEquipment;
+    return sortedEquipment.filter((t) =>
       [t.name, t.type, t.status, t.notes]
         .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
     );
-  }, [sortedTransports, search]);
+  }, [sortedEquipment, search]);
 
   // ==========================
   // Handlers
@@ -61,7 +61,7 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
   const handleDelete = async (id: string) => {
     openConfirm({
       title: 'حذف المعدة',
-      message: 'هل أنت متأكد من حذف هذه المعدة؟',
+      message: 'هل أنت متأكد من حذف هذه المعدة؟ سيتم حذف سجل الصيانة الخاص بها.',
       confirmText: 'حذف المعدة',
       variant: 'danger',
       onConfirm: async () => { const res = await deleteEquipment(id); if (!res.success) alert(res.error); },
@@ -86,7 +86,8 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
           onClick={() => setIsAddOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition whitespace-nowrap"
         >
-          <Plus className="w-5 h-5" />إضافة معدة</button>
+          <Plus className="w-5 h-5" />إضافة معدة
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-slate-200 overflow-hidden">
@@ -98,6 +99,7 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
                   { label: 'الاسم', key: 'name' },
                   { label: 'النوع', key: 'type' },
                   { label: 'الحالة', key: 'status' },
+                  { label: 'عدد سجلات الصيانة', key: 'maintenanceCount' },
                   { label: 'ملاحظات', key: 'notes' }
                 ].map((col) => (
                   <th key={col.key} onClick={() => handleSort(col.key)} className="px-8 py-5 cursor-pointer hover:bg-emerald-100/50 transition select-none">
@@ -112,28 +114,50 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-              {filteredEquipment.map((eq: EquipmentData) => (
-                <tr key={eq.id} className="hover:bg-slate-50 transition">
-                  <td className="px-8 py-5 font-bold text-slate-900 flex items-center gap-2"><Wrench className="w-4 h-4 text-slate-400"/> {eq.name}</td>
-                  <td className="px-8 py-5 text-slate-600">{eq.type}</td>
-                  <td className="px-8 py-5">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      eq.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
-                      eq.status === 'MAINTENANCE' ? 'bg-amber-100 text-amber-700' :
-                      'bg-rose-100 text-rose-700'
-                    }`}>
-                      {eq.status === 'ACTIVE' ? 'نشط' : eq.status === 'MAINTENANCE' ? 'صيانة' : 'خارج الخدمة'}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-slate-500 truncate max-w-[200px]">{eq.notes || '-'}</td>
-                  <td className="px-8 py-5 text-end flex flex-nowrap items-center justify-end gap-2">
-                    <button onClick={() => setEditData(eq)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(eq.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
-                  </td>
-                </tr>
-              ))}
+              {filteredEquipment.map((eq: EquipmentData) => {
+                const logCount = eq.maintenances?.length || 0;
+                return (
+                  <tr key={eq.id} className="hover:bg-slate-50 transition">
+                    <td className="px-8 py-5 font-bold text-slate-900 flex items-center gap-2"><Wrench className="w-4 h-4 text-slate-400"/> {eq.name}</td>
+                    <td className="px-8 py-5 text-slate-600">{eq.type}</td>
+                    <td className="px-8 py-5">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        eq.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
+                        eq.status === 'MAINTENANCE' ? 'bg-amber-100 text-amber-700' :
+                        'bg-rose-100 text-rose-700'
+                      }`}>
+                        {eq.status === 'ACTIVE' ? 'نشط' : eq.status === 'MAINTENANCE' ? 'صيانة' : 'خارج الخدمة'}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5">
+                      {logCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
+                          <ClipboardList className="w-3 h-3" /> {logCount} سجل
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 text-xs">لا توجد</span>
+                      )}
+                    </td>
+                    <td className="px-8 py-5 text-slate-500 truncate max-w-[200px]">{eq.notes || '-'}</td>
+                    <td className="px-8 py-5 text-end">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setMaintenanceEquipment(eq)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition text-xs font-medium"
+                          title="سجل الصيانة"
+                        >
+                          <ClipboardList className="w-3.5 h-3.5" />
+                          سجل الصيانة
+                        </button>
+                        <button onClick={() => setEditData(eq)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition"><Edit2 className="w-4 h-4" /></button>
+                        <button onClick={() => handleDelete(eq.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
               {filteredEquipment.length === 0 && (
-                <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">لا توجد معدات مضافة.</td></tr>
+                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">لا توجد معدات مضافة.</td></tr>
               )}
             </tbody>
           </table>
@@ -142,6 +166,11 @@ export default function EquipmentClientView({ initialEquipment }: { initialEquip
 
       <AddEquipmentDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
       {editData && <EditEquipmentDialog isOpen={!!editData} onClose={() => setEditData(null)} equipment={editData} />}
+      <MaintenanceLogModal
+        isOpen={!!maintenanceEquipment}
+        onClose={() => setMaintenanceEquipment(null)}
+        equipment={maintenanceEquipment}
+      />
       <ConfirmDialog
         isOpen={confirmState.isOpen} onClose={closeConfirm} onConfirm={confirmState.onConfirm}
         title={confirmState.title} message={confirmState.message}

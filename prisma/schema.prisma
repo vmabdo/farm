@@ -57,29 +57,30 @@ model FeedItem {
   name         String
   type         String
   currentStock Float    @default(0)
-  unit         String   // KG, TON, BAG
-  dailyPrice   Float    @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  orders       FeedOrder[]
+  orders       FeedPurchaseOrder[]
   consumptions FeedConsumption[]
 }
 
-model FeedOrder {
-  id          String   @id @default(cuid())
-  feedItemId  String
-  quantity    Float
-  orderDate   DateTime @default(now())
-  cost        Float
-  supplier    String?
-  feedItem    FeedItem @relation(fields: [feedItemId], references: [id], onDelete: Cascade)
+model FeedPurchaseOrder {
+  id           String   @id @default(cuid())
+  feedId       String
+  quantity     Float
+  unit         String
+  pricePerUnit Float
+  totalCost    Float
+  date         DateTime @default(now())
+  supplier     String?
+  feedItem     FeedItem @relation(fields: [feedId], references: [id], onDelete: Cascade)
 }
 
 model FeedConsumption {
   id          String   @id @default(cuid())
   feedItemId  String
   quantity    Float
+  unit        String   @default("كيلو")
   date        DateTime @default(now())
   notes       String?
   feedItem    FeedItem @relation(fields: [feedItemId], references: [id], onDelete: Cascade)
@@ -115,14 +116,22 @@ model Payroll {
 model Medicine {
   id             String   @id @default(cuid())
   name           String
-  supplier       String?
-  currentStock   Float    @default(0)
-  unit           String   // ML, DOSE, BOTTLE
-  expirationDate DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   records        MedicalRecord[]
+  orders         MedicalPurchaseOrder[]
+}
+
+model MedicalPurchaseOrder {
+  id           String   @id @default(cuid())
+  medicineId   String
+  quantity     Float
+  unit         String
+  pricePerUnit Float
+  totalCost    Float
+  date         DateTime @default(now())
+  medicine     Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
 }
 
 model MedicalRecord {
@@ -130,6 +139,7 @@ model MedicalRecord {
   cattleId      String
   medicineId    String
   dose          Float
+  unit          String   @default("جرعة")
   treatmentDate DateTime @default(now())
   type          String   // VACCINE, TREATMENT
   notes         String?
@@ -168,6 +178,17 @@ model Equipment {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  maintenances EquipmentMaintenance[]
+}
+
+model EquipmentMaintenance {
+  id          String   @id @default(cuid())
+  equipmentId String
+  description String
+  cost        Float
+  date        DateTime @default(now())
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
 }
 
 // 7. Invoices & Reports

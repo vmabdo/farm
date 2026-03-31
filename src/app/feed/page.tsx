@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic';
 export default async function FeedPage() {
   const [feedItems, feedOrders, feedConsumptions] = await Promise.all([
     prisma.feedItem.findMany({ orderBy: { name: 'asc' } }),
-    prisma.feedOrder.findMany({ 
+    prisma.feedPurchaseOrder.findMany({ 
       include: { feedItem: true },
-      orderBy: { orderDate: 'desc' } 
+      orderBy: { date: 'desc' } 
     }),
     prisma.feedConsumption.findMany({ 
       include: { feedItem: true },
@@ -31,16 +31,16 @@ export default async function FeedPage() {
           <span className="text-2xl font-bold text-slate-800">{feedItems.length}</span>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-emerald-100 flex flex-col justify-center">
-          <span className="text-sm font-medium text-emerald-600 mb-1">المخزون الكلي (طن)</span>
-          <span className="text-2xl font-bold text-emerald-700">{feedItems.reduce((sum: number, item: any) => sum + item.currentStock, 0).toFixed(2)}</span>
+          <span className="text-sm font-medium text-emerald-600 mb-1">طلبيات الشراء</span>
+          <span className="text-2xl font-bold text-emerald-700">{feedOrders.length}</span>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-blue-100 flex flex-col justify-center">
-          <span className="text-sm font-medium text-blue-600 mb-1">طلبيات الشراء</span>
-          <span className="text-2xl font-bold text-blue-700">{feedOrders.length}</span>
+          <span className="text-sm font-medium text-blue-600 mb-1">سجلات الاستهلاك</span>
+          <span className="text-2xl font-bold text-blue-700">{feedConsumptions.length}</span>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-rose-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-rose-600 mb-1">تكلفة الطلبيات (ج.م)</span>
-          <span className="text-2xl font-bold text-rose-700">{feedOrders.reduce((sum: number, order: any) => sum + order.totalCost, 0).toFixed(2)}</span>
+          <span className="text-2xl font-bold text-rose-700">{feedOrders.reduce((sum: number, order: any) => sum + (order.totalCost || 0), 0).toFixed(2)}</span>
         </div>
       </div>
 

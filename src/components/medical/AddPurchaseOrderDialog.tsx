@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { createFeedOrder } from '@/app/actions/feed';
+import { createMedicalPurchaseOrder } from '@/app/actions/medical';
 import { X, Calculator } from 'lucide-react';
 
-export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boolean; onClose: () => void; items: any[] }) {
+export default function AddPurchaseOrderDialog({ isOpen, onClose, medicines }: { isOpen: boolean; onClose: () => void; medicines: any[] }) {
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState('');
   const [pricePerUnit, setPricePerUnit] = useState('');
@@ -22,7 +22,7 @@ export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boo
     if (unitMode === 'text') {
       formData.set('unit', unitText);
     }
-    const res = await createFeedOrder(formData);
+    const res = await createMedicalPurchaseOrder(formData);
     setLoading(false);
     
     if (res.success) {
@@ -38,10 +38,10 @@ export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-indigo-50">
+        <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-rose-50">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">تسجيل طلبية علف</h2>
-            <p className="text-sm text-slate-500 mt-0.5">إضافة طلب شراء جديد للمخزون</p>
+            <h2 className="text-xl font-bold text-slate-800">تسجيل طلبية أدوية</h2>
+            <p className="text-sm text-slate-500 mt-0.5">إضافة طلبية شراء جديدة للمخزون</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
@@ -50,15 +50,15 @@ export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boo
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">نوع العلف *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">اسم الدواء *</label>
             <select
-              name="feedId"
+              name="medicineId"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
             >
-              <option value="">حدد نوع العلف...</option>
-              {items.map(item => (
-                <option key={item.id} value={item.id}>{item.name}</option>
+              <option value="">حدد الدواء...</option>
+              {medicines.map(med => (
+                <option key={med.id} value={med.id}>{med.name}</option>
               ))}
             </select>
           </div>
@@ -71,23 +71,23 @@ export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boo
                 type="number" 
                 min="0.01"
                 step="0.01"
-                required 
+                required
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="0"
-                className="flex-1 px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" 
+                className="flex-1 px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
               />
               {unitMode === 'select' ? (
                 <div className="flex gap-1">
                   <select
                     name="unit"
                     required
-                    className="w-28 px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white text-sm"
+                    className="w-28 px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white text-sm"
                   >
+                    <option value="مللي">مللي</option>
+                    <option value="جرعة">جرعة</option>
+                    <option value="عبوة">عبوة</option>
                     <option value="كيلو">كيلو</option>
-                    <option value="طن">طن</option>
-                    <option value="شكارة">شكارة</option>
-                    <option value="جوال">جوال</option>
                     <option value="لتر">لتر</option>
                   </select>
                   <button type="button" onClick={() => setUnitMode('text')} className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition whitespace-nowrap">أخرى</button>
@@ -100,7 +100,7 @@ export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boo
                     value={unitText}
                     onChange={(e) => setUnitText(e.target.value)}
                     placeholder="وحدة..."
-                    className="w-24 px-3 py-2 border border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
+                    className="w-24 px-3 py-2 border border-rose-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition text-sm"
                   />
                   <button type="button" onClick={() => { setUnitMode('select'); setUnitText(''); }} className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition whitespace-nowrap">←</button>
                 </div>
@@ -119,37 +119,29 @@ export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boo
               value={pricePerUnit}
               onChange={(e) => setPricePerUnit(e.target.value)}
               placeholder="0.00"
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
             />
           </div>
 
           {/* Auto-calculated total */}
           {totalCost > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-              <Calculator className="w-5 h-5 text-indigo-500 shrink-0" />
+            <div className="flex items-center gap-3 p-3 bg-rose-50 rounded-xl border border-rose-100">
+              <Calculator className="w-5 h-5 text-rose-500 shrink-0" />
               <div>
-                <p className="text-xs text-indigo-600 font-medium">التكلفة الإجمالية المحسوبة</p>
-                <p className="text-lg font-bold text-indigo-700">ج.م {totalCost.toFixed(2)}</p>
+                <p className="text-xs text-rose-600 font-medium">التكلفة الإجمالية المحسوبة</p>
+                <p className="text-lg font-bold text-rose-700">ج.م {totalCost.toFixed(2)}</p>
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">المورد</label>
-            <input 
-              name="supplier" 
-              placeholder="اسم المورد (اختياري)"
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" 
-            />
-          </div>
-          <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ الاستلام *</label>
             <input 
-              name="orderDate" 
+              name="date" 
               type="date"
               defaultValue={new Date().toISOString().split('T')[0]}
               required 
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" 
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
             />
           </div>
 
@@ -161,8 +153,8 @@ export default function AddOrderDialog({ isOpen, onClose, items }: { isOpen: boo
             >إلغاء</button>
             <button 
               type="submit" 
-              disabled={loading || items.length === 0}
-              className="px-5 py-2 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition disabled:opacity-50"
+              disabled={loading || medicines.length === 0}
+              className="px-5 py-2 bg-rose-600 text-white font-medium rounded-xl hover:bg-rose-700 transition disabled:opacity-50"
             >
               {loading ? 'جاري الحفظ...' : 'تسجيل الطلبية'}
             </button>

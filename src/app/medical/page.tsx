@@ -4,7 +4,7 @@ import MedicalClientView from '@/components/medical/MedicalClientView';
 export const dynamic = 'force-dynamic';
 
 export default async function MedicalPage() {
-  const [medicines, records, cattle] = await Promise.all([
+  const [medicines, records, cattle, purchaseOrders] = await Promise.all([
     prisma.medicine.findMany({ orderBy: { name: 'asc' } }),
     prisma.medicalRecord.findMany({ 
       include: { cattle: true, medicine: true },
@@ -13,7 +13,11 @@ export default async function MedicalPage() {
     prisma.cattle.findMany({ 
       where: { status: 'ACTIVE' },
       orderBy: { tagNumber: 'asc' },
-      select: { id: true, tagNumber: true, breed: { select: { name: true } } } // Fetching real active cattle
+      select: { id: true, tagNumber: true, breed: { select: { name: true } } }
+    }),
+    prisma.medicalPurchaseOrder.findMany({
+      include: { medicine: true },
+      orderBy: { date: 'desc' }
     }),
   ]);
 
@@ -32,8 +36,8 @@ export default async function MedicalPage() {
           <span className="text-2xl font-bold text-slate-800">{medicines.length}</span>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-emerald-100 flex flex-col justify-center">
-          <span className="text-sm font-medium text-emerald-600 mb-1">المخزون الكلي (جرعة)</span>
-          <span className="text-2xl font-bold text-emerald-700">{medicines.reduce((sum: number, med: any) => sum + med.currentStock, 0)}</span>
+          <span className="text-sm font-medium text-emerald-600 mb-1">طلبيات الشراء</span>
+          <span className="text-2xl font-bold text-emerald-700">{purchaseOrders.length}</span>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-blue-100 flex flex-col justify-center">
           <span className="text-sm font-medium text-blue-600 mb-1">سجلات العلاج</span>
@@ -48,6 +52,7 @@ export default async function MedicalPage() {
       <MedicalClientView 
         initialMedicines={medicines}
         initialRecords={records}
+        initialOrders={purchaseOrders}
         cattleData={cattle}
       />
     </div>

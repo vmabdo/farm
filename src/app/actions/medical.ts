@@ -17,10 +17,6 @@ export async function createMedicine(formData: FormData) {
     await prisma.medicine.create({
       data: {
         name,
-        supplier,
-        currentStock,
-        unit,
-        expirationDate: expirationDate ? new Date(expirationDate) : null,
       },
     });
     revalidatePath('/medical');
@@ -45,10 +41,6 @@ export async function updateMedicine(id: string, formData: FormData) {
       where: { id },
       data: {
         name,
-        supplier,
-        currentStock,
-        unit,
-        expirationDate: expirationDate ? new Date(expirationDate) : null,
       },
     });
     revalidatePath('/medical');
@@ -63,6 +55,7 @@ export async function deleteMedicine(id: string) {
   try {
     await prisma.$transaction([
       prisma.medicalRecord.deleteMany({ where: { medicineId: id } }),
+      prisma.medicalPurchaseOrder.deleteMany({ where: { medicineId: id } }),
       prisma.medicine.delete({ where: { id } })
     ]);
     
@@ -71,6 +64,51 @@ export async function deleteMedicine(id: string) {
   } catch (error) {
     console.error('Error deleting medicine:', error);
     return { success: false, error: 'Failed to delete medicine item.' };
+  }
+}
+
+// ==========================================
+// MEDICAL PURCHASE ORDERS
+// ==========================================
+export async function createMedicalPurchaseOrder(formData: FormData) {
+  const medicineId = formData.get('medicineId') as string;
+  const quantity = parseFloat(formData.get('quantity') as string);
+  const unit = formData.get('unit') as string;
+  const pricePerUnit = parseFloat(formData.get('pricePerUnit') as string);
+  const dateStr = formData.get('date') as string;
+
+  if (quantity <= 0 || pricePerUnit < 0) return { success: false, error: 'Quantity must be positive and price cannot be negative.' };
+
+  try {
+    const totalCost = quantity * pricePerUnit;
+
+    await prisma.medicalPurchaseOrder.create({
+      data: {
+        medicineId,
+        quantity,
+        unit,
+        pricePerUnit,
+        totalCost,
+        date: new Date(dateStr),
+      },
+    });
+
+    revalidatePath('/medical');
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating medical PO:', error);
+    return { success: false, error: 'Failed to create medical purchase order.' };
+  }
+}
+
+export async function deleteMedicalPurchaseOrder(id: string) {
+  try {
+    await prisma.medicalPurchaseOrder.delete({ where: { id } });
+    revalidatePath('/medical');
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting medical PO:', error);
+    return { success: false, error: 'Failed to delete medical purchase order.' };
   }
 }
 
@@ -85,39 +123,38 @@ export async function createMedicalRecord(formData: FormData) {
   const type = formData.get('type') as string;
   const notes = formData.get('notes') as string;
 
-  if (dose <= 0) return { success: false, error: 'Dose must be a positive number.' };
+  if (dose <= 0) return { success: false, error: 'الجرعة يجب أن تكون أكبر من صفر.' };
 
   try {
-    await prisma.$transaction(async (tx) => {
-      const medicineItem = await tx.medicine.findUnique({ where: { id: medicineId } });
-      if (!medicineItem) throw new Error('Medicine not found.');
-      if (medicineItem.currentStock < dose) throw new Error(`Not enough medicine stock. Available: ${medicineItem.currentStock.toFixed(2)} ${medicineItem.unit}`);
+    // Server-side: fetch the latest PO unit — do NOT trust client input
+    const latestOrder = await prisma.medicalPurchaseOrder.findFirst({
+      where: { medicineId },
+      orderBy: { date: 'desc' },
+    });
 
-      await tx.medicalRecord.create({
-        data: {
-          cattleId,
-          medicineId,
-          dose,
-          treatmentDate: new Date(treatmentDate),
-          type,
-          notes,
-        },
-      });
+    if (!latestOrder) {
+      return { success: false, error: 'لا توجد طلبية شراء لهذا الدواء. يجب إضافة طلبية أولاً لتحديد الوحدة.' };
+    }
 
-      // Deduct stock optionally based on requirement
-      await tx.medicine.update({
-        where: { id: medicineId },
-        data: {
-          currentStock: { decrement: dose }
-        }
-      });
+    const unit = latestOrder.unit;
+
+    await prisma.medicalRecord.create({
+      data: {
+        cattleId,
+        medicineId,
+        dose,
+        unit,
+        treatmentDate: new Date(treatmentDate),
+        type,
+        notes,
+      },
     });
 
     revalidatePath('/medical');
     return { success: true };
   } catch (error) {
     console.error('Error logging medical record:', error);
-    return { success: false, error: 'Failed to log treatment.' };
+    return { success: false, error: 'حدث خطأ أثناء تسجيل العلاج.' };
   }
 }
 
@@ -129,77 +166,37 @@ export async function updateMedicalRecord(id: string, formData: FormData) {
   const type = formData.get('type') as string;
   const notes = formData.get('notes') as string;
 
-  if (dose <= 0) return { success: false, error: 'Dose must be a positive number.' };
+  if (dose <= 0) return { success: false, error: 'الجرعة يجب أن تكون أكبر من صفر.' };
 
   try {
-    await prisma.$transaction(async (tx) => {
-      const oldRecord = await tx.medicalRecord.findUnique({ where: { id } });
-      if (!oldRecord) throw new Error('Record not found');
+    // Preserve the original unit — never allow override
+    const existing = await prisma.medicalRecord.findUnique({ where: { id } });
+    if (!existing) return { success: false, error: 'السجل غير موجود.' };
 
-      // Revert old dose, apply new dose
-      if (oldRecord.medicineId !== medicineId) {
-        // Medicine changed
-        const newMedicineItem = await tx.medicine.findUnique({ where: { id: medicineId } });
-        if (!newMedicineItem) throw new Error('New medicine not found.');
-        if (newMedicineItem.currentStock < dose) throw new Error(`Not enough medicine stock. Available: ${newMedicineItem.currentStock.toFixed(2)} ${newMedicineItem.unit}`);
-
-        await tx.medicine.update({
-          where: { id: oldRecord.medicineId },
-          data: { currentStock: { increment: oldRecord.dose } }
-        });
-        await tx.medicine.update({
-          where: { id: medicineId },
-          data: { currentStock: { decrement: dose } }
-        });
-      } else {
-        // Same medicine, difference in dose
-        const diff = dose - oldRecord.dose;
-        if (diff > 0) {
-          const medItem = await tx.medicine.findUnique({ where: { id: medicineId }});
-          if (!medItem || medItem.currentStock < diff) throw new Error(`Not enough medicine stock. Need ${diff.toFixed(2)} more, but only ${medItem?.currentStock.toFixed(2) || 0} available.`);
-        }
-        await tx.medicine.update({
-          where: { id: medicineId },
-          data: { currentStock: { decrement: diff } }
-        });
-      }
-
-      await tx.medicalRecord.update({
-        where: { id },
-        data: {
-          cattleId,
-          medicineId,
-          dose,
-          treatmentDate: new Date(treatmentDate),
-          type,
-          notes,
-        },
-      });
+    await prisma.medicalRecord.update({
+      where: { id },
+      data: {
+        cattleId,
+        medicineId,
+        dose,
+        unit: existing.unit,
+        treatmentDate: new Date(treatmentDate),
+        type,
+        notes,
+      },
     });
 
     revalidatePath('/medical');
     return { success: true };
   } catch (error) {
     console.error('Error updating medical record:', error);
-    return { success: false, error: 'Failed to update treatment log.' };
+    return { success: false, error: 'حدث خطأ أثناء تحديث سجل العلاج.' };
   }
 }
 
 export async function deleteMedicalRecord(id: string) {
   try {
-    await prisma.$transaction(async (tx) => {
-      const record = await tx.medicalRecord.findUnique({ where: { id } });
-      if (!record) throw new Error('Record not found');
-
-      await tx.medicalRecord.delete({ where: { id } });
-
-      // Restore dose to stock
-      await tx.medicine.update({
-        where: { id: record.medicineId },
-        data: { currentStock: { increment: record.dose } }
-      });
-    });
-
+    await prisma.medicalRecord.delete({ where: { id } });
     revalidatePath('/medical');
     return { success: true };
   } catch (error) {

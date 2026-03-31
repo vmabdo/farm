@@ -52,29 +52,7 @@ export default function AddFeedItemDialog({ isOpen, onClose }: { isOpen: boolean
               placeholder="مثال: حبوب، سيلاج"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">وحدة القياس *</label>
-            <select
-              name="unit"
-              required
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
-            >
-              <option value="KG">كجم (KG)</option>
-              <option value="TON">طن (TON)</option>
-              <option value="BAG">طرد / كيس (BAG)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">سعر السوق اليوم (ج.م)</label>
-            <input 
-              name="dailyPrice" 
-              type="number"
-              min="0"
-              step="0.01"
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
-              placeholder="0.00"
-            />
-          </div>
+
 
           <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button 

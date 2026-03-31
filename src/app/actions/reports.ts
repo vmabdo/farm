@@ -24,51 +24,29 @@ export async function getReportData(startIso: string, endIso: string) {
   const totalRevenue = invoiceAgg._sum.netAmount ?? 0;
   const totalGrossRevenue = invoiceAgg._sum.totalAmount ?? 0;
 
-  // ── Feed consumption cost ──────────────────────────────────────────────
-  const feedConsumptions = await prisma.feedConsumption.findMany({
+  // ── Feed PO costs (PHASE 3: sum totalCost of FeedPurchaseOrders) ──────
+  const feedOrders = await prisma.feedPurchaseOrder.findMany({
     where: { date: dateFilter },
     include: { feedItem: true },
+    orderBy: { date: 'desc' },
   });
+  const totalFeedCost = feedOrders.reduce((s, o) => s + (o.totalCost ?? 0), 0);
 
-  // Aggregate per feedItem for the detail table
-  const feedMap: Record<string, { name: string; unit: string; totalQuantity: number; totalCost: number }> = {};
-  for (const fc of feedConsumptions) {
-    if (!feedMap[fc.feedItemId]) {
-      feedMap[fc.feedItemId] = {
-        name: fc.feedItem.name,
-        unit: fc.feedItem.unit,
-        totalQuantity: 0,
-        totalCost: 0,
-      };
-    }
-    feedMap[fc.feedItemId].totalQuantity += fc.quantity;
-    feedMap[fc.feedItemId].totalCost += fc.quantity * (fc.feedItem.dailyPrice ?? 0);
-  }
-  const feedDetails = Object.values(feedMap);
-  const totalFeedCost = feedDetails.reduce((s, f) => s + f.totalCost, 0);
-
-  // ── Medical costs ─────────────────────────────────────────────────────
-  const medicalRecords = await prisma.medicalRecord.findMany({
-    where: { treatmentDate: dateFilter },
+  // ── Medical PO costs (PHASE 3: sum totalCost of MedicalPurchaseOrders) ─
+  const medicalOrders = await prisma.medicalPurchaseOrder.findMany({
+    where: { date: dateFilter },
     include: { medicine: true },
+    orderBy: { date: 'desc' },
   });
+  const totalMedicalCost = medicalOrders.reduce((s, o) => s + (o.totalCost ?? 0), 0);
 
-  const medicineMap: Record<string, { name: string; totalDose: number; unit: string; totalCost: number }> = {};
-  for (const mr of medicalRecords) {
-    if (!medicineMap[mr.medicineId]) {
-      medicineMap[mr.medicineId] = {
-        name: mr.medicine.name,
-        unit: mr.medicine.unit,
-        totalDose: 0,
-        totalCost: 0,
-      };
-    }
-    medicineMap[mr.medicineId].totalDose += mr.dose;
-    // Medicine schema doesn't have a price per unit — use 0 for now; extend schema if needed
-    medicineMap[mr.medicineId].totalCost += 0;
-  }
-  const medicalDetails = Object.values(medicineMap);
-  const totalMedicalCost = medicalDetails.reduce((s, m) => s + m.totalCost, 0);
+  // ── Equipment Maintenance costs (PHASE 3) ──────────────────────────────
+  const maintenanceRecords = await prisma.equipmentMaintenance.findMany({
+    where: { date: dateFilter },
+    include: { equipment: true },
+    orderBy: { date: 'desc' },
+  });
+  const totalMaintenanceCost = maintenanceRecords.reduce((s, m) => s + (m.cost ?? 0), 0);
 
   // ── Worker payrolls ────────────────────────────────────────────────────
   const payrollAgg = await prisma.payroll.aggregate({
@@ -96,7 +74,13 @@ export async function getReportData(startIso: string, endIso: string) {
   });
 
   // ── P&L ───────────────────────────────────────────────────────────────
-  const totalExpenses = totalFeedCost + totalMedicalCost + totalWorkerCost + totalTransportCost;
+  const totalExpenses =
+    totalFeedCost +
+    totalMedicalCost +
+    totalMaintenanceCost +
+    totalWorkerCost +
+    totalTransportCost;
+
   const netProfit = totalRevenue - totalExpenses;
 
   return {
@@ -109,12 +93,14 @@ export async function getReportData(startIso: string, endIso: string) {
       totalExpenses,
       feedCost: totalFeedCost,
       medicalCost: totalMedicalCost,
+      maintenanceCost: totalMaintenanceCost,
       workerCost: totalWorkerCost,
       transportCost: totalTransportCost,
       netProfit,
     },
-    feed: feedDetails,
-    medical: medicalDetails,
+    feedOrders,
+    medicalOrders,
+    maintenanceRecords,
     payroll: {
       total: totalWorkerCost,
       details: payrollDetails,

@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChartLine, Wheat, Users, RefreshCw, AlertCircle, ShoppingCart, Stethoscope, TrendingUp, TrendingDown, Minus, Printer, Truck } from 'lucide-react';
+import {
+  ChartLine, Wheat, Users, RefreshCw, AlertCircle,
+  ShoppingCart, TrendingUp, TrendingDown, Minus,
+  Printer, Truck, Wrench, Syringe,
+} from 'lucide-react';
 import { getReportData } from '@/app/actions/reports';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -10,6 +14,24 @@ type ReportData = Awaited<ReturnType<typeof getReportData>>;
 
 function fmt(n: number) {
   return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Reusable detail-table wrapper
+function DetailTable({ title, icon, color, children }: {
+  title: string;
+  icon: React.ReactNode;
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-md print:break-inside-avoid">
+      <div className={`px-6 py-4 border-b border-slate-200 flex items-center gap-2 ${color}`}>
+        {icon}
+        <h3 className="font-bold text-slate-800">{title}</h3>
+      </div>
+      {children}
+    </div>
+  );
 }
 
 export default function ReportsClientView() {
@@ -122,17 +144,18 @@ export default function ReportsClientView() {
               </div>
             </div>
 
-            {/* Mini breakdown */}
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            {/* Mini breakdown — 6 items */}
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-sm">
               {[
-                { label: 'الإيرادات (صافي)', value: data.pnl.totalRevenue,     color: 'text-emerald-700', bg: 'bg-emerald-100/70' },
-                { label: 'تكاليف الأعلاف',   value: data.pnl.feedCost,        color: 'text-amber-700',   bg: 'bg-amber-100/70'   },
-                { label: 'تكاليف العلاجات',  value: data.pnl.medicalCost,     color: 'text-purple-700',  bg: 'bg-purple-100/70'  },
-                { label: 'تكاليف العمالة',   value: data.pnl.workerCost,      color: 'text-blue-700',    bg: 'bg-blue-100/70'    },
-                { label: 'مصروفات النقل',   value: data.pnl.transportCost,   color: 'text-cyan-700',    bg: 'bg-cyan-100/70'    },
+                { label: 'الإيرادات (صافي)',           value: data.pnl.totalRevenue,      color: 'text-emerald-700', bg: 'bg-emerald-100/70' },
+                { label: 'تكلفة طلبيات الأعلاف',       value: data.pnl.feedCost,          color: 'text-amber-700',   bg: 'bg-amber-100/70'   },
+                { label: 'تكلفة طلبيات الأدوية',       value: data.pnl.medicalCost,       color: 'text-purple-700',  bg: 'bg-purple-100/70'  },
+                { label: 'مصروفات صيانة المعدات',      value: data.pnl.maintenanceCost,   color: 'text-orange-700',  bg: 'bg-orange-100/70'  },
+                { label: 'تكاليف العمالة',              value: data.pnl.workerCost,        color: 'text-blue-700',    bg: 'bg-blue-100/70'    },
+                { label: 'مصروفات النقل',              value: data.pnl.transportCost,    color: 'text-cyan-700',    bg: 'bg-cyan-100/70'    },
               ].map((item) => (
                 <div key={item.label} className={`${item.bg} rounded-xl p-3`}>
-                  <p className="text-xs text-slate-500 font-medium">{item.label}</p>
+                  <p className="text-xs text-slate-500 font-medium leading-tight">{item.label}</p>
                   <p className={`font-black text-base mt-0.5 ${item.color}`}>
                     {fmt(item.value)} ج.م
                   </p>
@@ -178,7 +201,7 @@ export default function ReportsClientView() {
               <p className="text-xs text-slate-400">الإجمالي قبل الخصم: {fmt(data.pnl.totalGrossRevenue)} ج.م</p>
             </div>
 
-            {/* Expenses */}
+            {/* Total Expenses */}
             <div className="bg-white p-5 rounded-2xl shadow-md border border-rose-100
                             flex flex-col gap-2 print:break-inside-avoid">
               <div className="flex items-center gap-2 text-rose-600">
@@ -189,7 +212,7 @@ export default function ReportsClientView() {
                 {fmt(data.pnl.totalExpenses)}
                 <span className="text-sm font-normal ms-1 text-rose-500">ج.م</span>
               </div>
-              <p className="text-xs text-slate-400">أعلاف + علاجات + رواتب + نقل</p>
+              <p className="text-xs text-slate-400">أعلاف + أدوية + صيانة + رواتب + نقل</p>
             </div>
 
             {/* Workers */}
@@ -205,32 +228,71 @@ export default function ReportsClientView() {
               </div>
               <p className="text-xs text-slate-400">مصروفات العمال للفترة</p>
             </div>
-
-            {/* Transport */}
-            <div className="bg-white p-5 rounded-2xl shadow-md border border-cyan-100
-                            flex flex-col gap-2 print:break-inside-avoid">
-              <div className="flex items-center gap-2 text-cyan-600">
-                <Truck className="w-5 h-5" />
-                <h3 className="font-bold text-sm">مصروفات النقل</h3>
-              </div>
-              <div className="text-2xl font-black text-cyan-700 mt-auto">
-                {fmt(data.pnl.transportCost)}
-                <span className="text-sm font-normal ms-1 text-cyan-500">ج.م</span>
-              </div>
-              <p className="text-xs text-slate-400">تكاليف النقل واللوجستيك للفترة</p>
-            </div>
           </div>
 
           {/* ══ DETAIL TABLES GRID ═══════════════════════════════════════ */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:grid-cols-2 print:gap-4">
 
-            {/* Cattle status table */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden
-                            shadow-md print:break-inside-avoid">
-              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                <ChartLine className="w-4 h-4 text-indigo-600" />
-                <h3 className="font-bold text-slate-800">تفاصيل حركة القطيع</h3>
-              </div>
+            {/* ── P&L Breakdown table ──────────────────────────────────── */}
+            <DetailTable
+              title="ملخص الأرباح والخسائر"
+              icon={<TrendingUp className="w-4 h-4 text-emerald-600" />}
+              color="bg-slate-50"
+            >
+              <table className="w-full text-sm">
+                <thead className="text-slate-500 bg-slate-50/50">
+                  <tr>
+                    <th className="px-6 py-3 font-medium text-start">البيان</th>
+                    <th className="px-6 py-3 font-medium text-end">القيمة (ج.م)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-emerald-700">إجمالي الإيرادات (صافي)</td>
+                    <td className="px-6 py-4 text-end font-bold text-emerald-700">+ {fmt(data.pnl.totalRevenue)}</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-amber-700">تكلفة طلبيات الأعلاف</td>
+                    <td className="px-6 py-4 text-end font-bold text-amber-700">({fmt(data.pnl.feedCost)})</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-purple-700">تكلفة طلبيات الأدوية</td>
+                    <td className="px-6 py-4 text-end font-bold text-purple-700">({fmt(data.pnl.medicalCost)})</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-orange-700">مصروفات صيانة المعدات</td>
+                    <td className="px-6 py-4 text-end font-bold text-orange-700">({fmt(data.pnl.maintenanceCost)})</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-blue-700">تكلفة رواتب العمال</td>
+                    <td className="px-6 py-4 text-end font-bold text-blue-700">({fmt(data.pnl.workerCost)})</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-cyan-700">مصروفات النقل</td>
+                    <td className="px-6 py-4 text-end font-bold text-cyan-700">({fmt(data.pnl.transportCost)})</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50 bg-slate-50/80">
+                    <td className="px-6 py-4 font-semibold text-rose-700">إجمالي المصاريف</td>
+                    <td className="px-6 py-4 text-end font-bold text-rose-700">({fmt(data.pnl.totalExpenses)})</td>
+                  </tr>
+                  <tr className={`border-t-2 ${isProfit ? 'bg-emerald-50 border-emerald-200' : isLoss ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                    <td className={`px-6 py-4 font-black text-base ${isProfit ? 'text-emerald-700' : isLoss ? 'text-rose-700' : 'text-slate-700'}`}>
+                      صافي الأرباح / الخسائر
+                    </td>
+                    <td className={`px-6 py-4 text-end font-black text-base ${isProfit ? 'text-emerald-700' : isLoss ? 'text-rose-700' : 'text-slate-700'}`}>
+                      {isProfit ? '+' : ''}{fmt(data.pnl.netProfit)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </DetailTable>
+
+            {/* ── Cattle movement table ─────────────────────────────────── */}
+            <DetailTable
+              title="تفاصيل حركة القطيع"
+              icon={<ChartLine className="w-4 h-4 text-indigo-600" />}
+              color="bg-slate-50"
+            >
               <table className="w-full text-sm">
                 <thead className="text-slate-500 bg-slate-50/50">
                   <tr>
@@ -251,102 +313,132 @@ export default function ReportsClientView() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </DetailTable>
 
-            {/* P&L breakdown table */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden
-                            shadow-md print:break-inside-avoid">
-              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-                <h3 className="font-bold text-slate-800">ملخص الأرباح والخسائر</h3>
-              </div>
-              <table className="w-full text-sm">
-                <thead className="text-slate-500 bg-slate-50/50">
-                  <tr>
-                    <th className="px-6 py-3 font-medium text-start">البيان</th>
-                    <th className="px-6 py-3 font-medium text-end">القيمة (ج.م)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-semibold text-emerald-700">إجمالي الإيرادات (صافي)</td>
-                    <td className="px-6 py-4 text-end font-bold text-emerald-700">{fmt(data.pnl.totalRevenue)}</td>
-                  </tr>
-                  <tr className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-semibold text-amber-700">تكلفة الأعلاف</td>
-                    <td className="px-6 py-4 text-end font-bold text-amber-700">({fmt(data.pnl.feedCost)})</td>
-                  </tr>
-                  <tr className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-semibold text-purple-700">تكلفة العلاجات الطبية</td>
-                    <td className="px-6 py-4 text-end font-bold text-purple-700">({fmt(data.pnl.medicalCost)})</td>
-                  </tr>
-                  <tr className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-semibold text-blue-700">تكلفة رواتب العمال</td>
-                    <td className="px-6 py-4 text-end font-bold text-blue-700">({fmt(data.pnl.workerCost)})</td>
-                  </tr>
-                  <tr className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-semibold text-cyan-700">مصروفات النقل</td>
-                    <td className="px-6 py-4 text-end font-bold text-cyan-700">({fmt(data.pnl.transportCost)})</td>
-                  </tr>
-                  <tr className={`border-t-2 ${isProfit ? 'bg-emerald-50 border-emerald-200' : isLoss ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
-                    <td className={`px-6 py-4 font-black text-base ${isProfit ? 'text-emerald-700' : isLoss ? 'text-rose-700' : 'text-slate-700'}`}>
-                      صافي الأرباح / الخسائر
-                    </td>
-                    <td className={`px-6 py-4 text-end font-black text-base ${isProfit ? 'text-emerald-700' : isLoss ? 'text-rose-700' : 'text-slate-700'}`}>
-                      {isProfit ? '+' : ''}{fmt(data.pnl.netProfit)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Feed consumption table */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden
-                            shadow-md print:break-inside-avoid">
-              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                <Wheat className="w-4 h-4 text-amber-600" />
-                <h3 className="font-bold text-slate-800">تفاصيل استهلاك الأعلاف</h3>
-              </div>
+            {/* ── Feed Purchase Orders detail ───────────────────────────── */}
+            <DetailTable
+              title="تفاصيل طلبيات شراء الأعلاف"
+              icon={<Wheat className="w-4 h-4 text-amber-600" />}
+              color="bg-amber-50/50"
+            >
               <table className="w-full text-sm">
                 <thead className="text-slate-500 bg-slate-50/50">
                   <tr>
                     <th className="px-6 py-3 font-medium text-start">نوع العلف</th>
+                    <th className="px-6 py-3 font-medium text-start">التاريخ</th>
                     <th className="px-6 py-3 font-medium text-end">الكمية</th>
                     <th className="px-6 py-3 font-medium text-end">التكلفة (ج.م)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {data.feed.length > 0 ? data.feed.map((f, i) => (
-                    <tr key={i} className="hover:bg-slate-50">
-                      <td className="px-6 py-4 font-semibold text-slate-800">{f.name}</td>
+                  {data.feedOrders.length > 0 ? data.feedOrders.map((o: any, i: number) => (
+                    <tr key={i} className="hover:bg-amber-50/20">
+                      <td className="px-6 py-4 font-semibold text-slate-800">{o.feedItem?.name}</td>
+                      <td className="px-6 py-4 text-slate-500">{new Date(o.date).toLocaleDateString('ar-EG')}</td>
                       <td className="px-6 py-4 text-end">
                         <span className="font-mono bg-amber-50 text-amber-800 px-2 py-0.5 rounded-lg text-xs">
-                          {f.totalQuantity.toLocaleString()} {f.unit}
+                          {o.quantity.toLocaleString()} {o.unit}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-end font-bold text-amber-700">{fmt(f.totalCost)}</td>
+                      <td className="px-6 py-4 text-end font-bold text-amber-700">{fmt(o.totalCost)}</td>
                     </tr>
                   )) : (
-                    <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-400">لا توجد بيانات</td></tr>
+                    <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">لا توجد طلبيات أعلاف في هذه الفترة</td></tr>
                   )}
-                  {data.feed.length > 0 && (
+                  {data.feedOrders.length > 0 && (
                     <tr className="bg-amber-50/50 font-bold">
-                      <td className="px-6 py-3 text-amber-800">الإجمالي</td>
-                      <td className="px-6 py-3"></td>
+                      <td className="px-6 py-3 text-amber-800" colSpan={3}>إجمالي تكلفة طلبيات الأعلاف</td>
                       <td className="px-6 py-3 text-end text-amber-700">{fmt(data.pnl.feedCost)}</td>
                     </tr>
                   )}
                 </tbody>
               </table>
-            </div>
+            </DetailTable>
 
-            {/* Payroll table */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden
-                            shadow-md print:break-inside-avoid">
-              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                <Users className="w-4 h-4 text-blue-600" />
-                <h3 className="font-bold text-slate-800">تفاصيل صرف الرواتب</h3>
-              </div>
+            {/* ── Medical Purchase Orders detail ────────────────────────── */}
+            <DetailTable
+              title="تفاصيل طلبيات شراء الأدوية"
+              icon={<Syringe className="w-4 h-4 text-purple-600" />}
+              color="bg-purple-50/50"
+            >
+              <table className="w-full text-sm">
+                <thead className="text-slate-500 bg-slate-50/50">
+                  <tr>
+                    <th className="px-6 py-3 font-medium text-start">الدواء</th>
+                    <th className="px-6 py-3 font-medium text-start">التاريخ</th>
+                    <th className="px-6 py-3 font-medium text-end">الكمية</th>
+                    <th className="px-6 py-3 font-medium text-end">التكلفة (ج.م)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.medicalOrders.length > 0 ? data.medicalOrders.map((o: any, i: number) => (
+                    <tr key={i} className="hover:bg-purple-50/20">
+                      <td className="px-6 py-4 font-semibold text-slate-800">{o.medicine?.name}</td>
+                      <td className="px-6 py-4 text-slate-500">{new Date(o.date).toLocaleDateString('ar-EG')}</td>
+                      <td className="px-6 py-4 text-end">
+                        <span className="font-mono bg-purple-50 text-purple-800 px-2 py-0.5 rounded-lg text-xs">
+                          {o.quantity.toLocaleString()} {o.unit}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-end font-bold text-purple-700">{fmt(o.totalCost)}</td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">لا توجد طلبيات أدوية في هذه الفترة</td></tr>
+                  )}
+                  {data.medicalOrders.length > 0 && (
+                    <tr className="bg-purple-50/50 font-bold">
+                      <td className="px-6 py-3 text-purple-800" colSpan={3}>إجمالي تكلفة طلبيات الأدوية</td>
+                      <td className="px-6 py-3 text-end text-purple-700">{fmt(data.pnl.medicalCost)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </DetailTable>
+
+            {/* ── Equipment Maintenance detail ──────────────────────────── */}
+            <DetailTable
+              title="تفاصيل مصروفات صيانة المعدات"
+              icon={<Wrench className="w-4 h-4 text-orange-600" />}
+              color="bg-orange-50/50"
+            >
+              <table className="w-full text-sm">
+                <thead className="text-slate-500 bg-slate-50/50">
+                  <tr>
+                    <th className="px-6 py-3 font-medium text-start">المعدة</th>
+                    <th className="px-6 py-3 font-medium text-start">التاريخ</th>
+                    <th className="px-6 py-3 font-medium text-start">الوصف</th>
+                    <th className="px-6 py-3 font-medium text-end">التكلفة (ج.م)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.maintenanceRecords.length > 0 ? data.maintenanceRecords.map((m: any, i: number) => (
+                    <tr key={i} className="hover:bg-orange-50/20">
+                      <td className="px-6 py-4 font-semibold text-slate-800">{m.equipment?.name}</td>
+                      <td className="px-6 py-4 text-slate-500">{new Date(m.date).toLocaleDateString('ar-EG')}</td>
+                      <td className="px-6 py-4 text-slate-600 max-w-[160px] truncate">{m.description}</td>
+                      <td className="px-6 py-4 text-end font-bold text-orange-700">
+                        {m.cost > 0 ? fmt(m.cost) : '-'}
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">لا توجد سجلات صيانة في هذه الفترة</td></tr>
+                  )}
+                  {data.maintenanceRecords.length > 0 && (
+                    <tr className="bg-orange-50/50 font-bold">
+                      <td className="px-6 py-3 text-orange-800" colSpan={3}>إجمالي مصروفات الصيانة</td>
+                      <td className="px-6 py-3 text-end text-orange-700">{fmt(data.pnl.maintenanceCost)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </DetailTable>
+
+            {/* ── Payroll detail ────────────────────────────────────────── */}
+            <DetailTable
+              title="تفاصيل صرف الرواتب"
+              icon={<Users className="w-4 h-4 text-blue-600" />}
+              color="bg-blue-50/50"
+            >
               <table className="w-full text-sm">
                 <thead className="text-slate-500 bg-slate-50/50">
                   <tr>
@@ -356,8 +448,8 @@ export default function ReportsClientView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {data.payroll.details.length > 0 ? data.payroll.details.map((p, i) => (
-                    <tr key={i} className="hover:bg-slate-50">
+                  {data.payroll.details.length > 0 ? data.payroll.details.map((p: any, i: number) => (
+                    <tr key={i} className="hover:bg-blue-50/20">
                       <td className="px-6 py-4 font-semibold text-slate-800">{p.worker.name}</td>
                       <td className="px-6 py-4 text-slate-500">{new Date(p.paymentDate).toLocaleDateString('ar-EG')}</td>
                       <td className="px-6 py-4 text-end font-bold text-blue-700">{fmt(p.amount)}</td>
@@ -373,15 +465,14 @@ export default function ReportsClientView() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </DetailTable>
 
-            {/* Transport detail table */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden
-                            shadow-md print:break-inside-avoid">
-              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                <Truck className="w-4 h-4 text-cyan-600" />
-                <h3 className="font-bold text-slate-800">تفاصيل مصروفات النقل</h3>
-              </div>
+            {/* ── Transport detail ──────────────────────────────────────── */}
+            <DetailTable
+              title="تفاصيل مصروفات النقل"
+              icon={<Truck className="w-4 h-4 text-cyan-600" />}
+              color="bg-cyan-50/50"
+            >
               <table className="w-full text-sm">
                 <thead className="text-slate-500 bg-slate-50/50">
                   <tr>
@@ -391,8 +482,8 @@ export default function ReportsClientView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {data.transport.details.length > 0 ? data.transport.details.map((t, i) => (
-                    <tr key={i} className="hover:bg-slate-50">
+                  {data.transport.details.length > 0 ? data.transport.details.map((t: any, i: number) => (
+                    <tr key={i} className="hover:bg-cyan-50/20">
                       <td className="px-6 py-4 text-slate-500">{new Date(t.travelDate).toLocaleDateString('ar-EG')}</td>
                       <td className="px-6 py-4 font-semibold text-slate-800">
                         {t.driverName ? `${t.driverName} • ` : ''}{t.purpose}
@@ -410,7 +501,7 @@ export default function ReportsClientView() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </DetailTable>
 
           </div>{/* /detail grid */}
         </div>

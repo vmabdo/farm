@@ -1,29 +1,34 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Syringe, HeartPulse, Search } from 'lucide-react';
-import { deleteMedicine, deleteMedicalRecord } from '@/app/actions/medical';
+import { ChevronUp, ChevronDown, Plus, Trash2, Edit2, Syringe, HeartPulse, Search, ShoppingCart } from 'lucide-react';
+import { deleteMedicine, deleteMedicalRecord, deleteMedicalPurchaseOrder } from '@/app/actions/medical';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 import AddMedicineDialog from './AddMedicineDialog';
 import EditMedicineDialog from './EditMedicineDialog';
 import AddRecordDialog from './AddRecordDialog';
 import EditRecordDialog from './EditRecordDialog';
+import AddPurchaseOrderDialog from './AddPurchaseOrderDialog';
 
 type MedicineData = any;
 type MedicalRecordData = any;
+type MedicalOrderData = any;
 type CattleData = any;
 
 export default function MedicalClientView({ 
   initialMedicines, 
   initialRecords,
+  initialOrders,
   cattleData
 }: { 
   initialMedicines: MedicineData[], 
   initialRecords: MedicalRecordData[],
+  initialOrders: MedicalOrderData[],
   cattleData: CattleData[]
 }) {
-  const [activeTab, setActiveTab] = useState<'inventory' | 'records'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'records'>('inventory');
+  const [search, setSearch] = useState('');
 
   // Medicine State
   const [medSortCol, setMedSortCol] = useState<string>('name');
@@ -31,12 +36,14 @@ export default function MedicalClientView({
   const [isAddMedOpen, setIsAddMedOpen] = useState(false);
   const [editMedData, setEditMedData] = useState<MedicineData | null>(null);
 
+  // Orders State
+  const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
+
   // Treatment Records State
   const [recSortCol, setRecSortCol] = useState<string>('treatmentDate');
   const [recSortDesc, setRecSortDesc] = useState<boolean>(true);
   const [isAddRecOpen, setIsAddRecOpen] = useState(false);
   const [editRecData, setEditRecData] = useState<MedicalRecordData | null>(null);
-  const [search, setSearch] = useState('');
 
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean; title: string; message: string;
@@ -46,48 +53,56 @@ export default function MedicalClientView({
   const closeConfirm = () => setConfirmState((s) => ({ ...s, isOpen: false }));
 
   // ==========================
+  // Aggregated Stocks per medicine per unit
+  // ==========================
+  const aggregatedMedicines = useMemo(() => {
+    return initialMedicines.map(med => {
+      const stocks: Record<string, number> = {};
+      initialOrders.filter((o: any) => o.medicineId === med.id || o.medicine?.id === med.id).forEach((o: any) => {
+        stocks[o.unit] = (stocks[o.unit] || 0) + o.quantity;
+      });
+      initialRecords.filter((r: any) => r.medicineId === med.id || r.medicine?.id === med.id).forEach((r: any) => {
+        const unit = r.unit || 'جرعة';
+        stocks[unit] = (stocks[unit] || 0) - r.dose;
+      });
+      return { ...med, stocks };
+    });
+  }, [initialMedicines, initialOrders, initialRecords]);
+
+  // ==========================
   // Memoized Sorted Data
   // ==========================
   const sortedMedicines = useMemo(() => {
-    return [...initialMedicines].sort((a, b) => {
+    return [...aggregatedMedicines].sort((a, b) => {
       let valA = a[medSortCol];
       let valB = b[medSortCol];
-      
-      if (medSortCol === 'expirationDate' && valA) valA = new Date(valA).getTime();
-      if (medSortCol === 'expirationDate' && valB) valB = new Date(valB).getTime();
-
       if (typeof valA === 'string') valA = valA.toLowerCase();
       if (typeof valB === 'string') valB = valB.toLowerCase();
-      
-      // Handle nulls
       if (valA === null) return 1;
       if (valB === null) return -1;
-
       if (valA < valB) return medSortDesc ? 1 : -1;
       if (valA > valB) return medSortDesc ? -1 : 1;
       return 0;
     });
-  }, [initialMedicines, medSortCol, medSortDesc]);
+  }, [aggregatedMedicines, medSortCol, medSortDesc]);
+
+  const sortedOrders = useMemo(() => {
+    return [...initialOrders].sort((a, b) => {
+      const dA = new Date(a.date).getTime();
+      const dB = new Date(b.date).getTime();
+      return dB - dA;
+    });
+  }, [initialOrders]);
 
   const sortedRecords = useMemo(() => {
     return [...initialRecords].sort((a, b) => {
       let valA = a[recSortCol];
       let valB = b[recSortCol];
-      
-      if (recSortCol === 'cattle') {
-        valA = a.cattle?.tagNumber;
-        valB = b.cattle?.tagNumber;
-      } else if (recSortCol === 'medicine') {
-        valA = a.medicine?.name;
-        valB = b.medicine?.name;
-      } else if (recSortCol === 'treatmentDate') {
-        valA = new Date(valA).getTime();
-        valB = new Date(valB).getTime();
-      }
-
+      if (recSortCol === 'cattle') { valA = a.cattle?.tagNumber; valB = b.cattle?.tagNumber; }
+      else if (recSortCol === 'medicine') { valA = a.medicine?.name; valB = b.medicine?.name; }
+      else if (recSortCol === 'treatmentDate') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
       if (typeof valA === 'string') valA = valA.toLowerCase();
       if (typeof valB === 'string') valB = valB.toLowerCase();
-      
       if (valA < valB) return recSortDesc ? 1 : -1;
       if (valA > valB) return recSortDesc ? -1 : 1;
       return 0;
@@ -98,17 +113,23 @@ export default function MedicalClientView({
     const q = search.toLowerCase().trim();
     if (!q) return sortedMedicines;
     return sortedMedicines.filter((m) =>
-      [m.name, m.supplier, m.unit]
-        .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+      [m.name, Object.keys(m.stocks).join(' ')].filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
     );
   }, [sortedMedicines, search]);
+
+  const filteredOrders = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return sortedOrders;
+    return sortedOrders.filter((o: any) =>
+      [o.medicine?.name, o.unit].filter(Boolean).some((v: any) => String(v).toLowerCase().includes(q))
+    );
+  }, [sortedOrders, search]);
 
   const filteredRecords = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return sortedRecords;
-    return sortedRecords.filter((r) =>
-      [r.cattle?.tagNumber, r.medicine?.name, r.type, r.notes]
-        .filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+    return sortedRecords.filter((r: any) =>
+      [r.cattle?.tagNumber, r.medicine?.name, r.type, r.notes].filter(Boolean).some((v: any) => String(v).toLowerCase().includes(q))
     );
   }, [sortedRecords, search]);
 
@@ -124,20 +145,30 @@ export default function MedicalClientView({
     else { setRecSortCol(col); setRecSortDesc(true); }
   };
 
-  const handleDeleteMedicine = async (id: string) => {
+  const handleDeleteMedicine = (id: string) => {
     openConfirm({
       title: 'حذف الدواء',
-      message: 'هل أنت متأكد من حذف هذا الدواء؟ سيتم حذف جميع العلاجات المرتبطة به بشكل دائم.',
+      message: 'هل أنت متأكد من حذف هذا الدواء؟ سيتم حذف جميع الطلبيات والعلاجات المرتبطة به بشكل دائم.',
       confirmText: 'حذف الدواء',
       variant: 'danger',
       onConfirm: async () => { const res = await deleteMedicine(id); if (!res.success) alert(res.error); },
     });
   };
 
-  const handleDeleteRecord = async (id: string) => {
+  const handleDeleteOrder = (id: string) => {
+    openConfirm({
+      title: 'حذف الطلبية',
+      message: 'هل أنت متأكد من حذف هذه الطلبية؟ سيتم تحديث المخزون تلقائياً.',
+      confirmText: 'حذف الطلبية',
+      variant: 'warning',
+      onConfirm: async () => { const res = await deleteMedicalPurchaseOrder(id); if (!res.success) alert(res.error); },
+    });
+  };
+
+  const handleDeleteRecord = (id: string) => {
     openConfirm({
       title: 'حذف السجل العلاجي',
-      message: 'هل أنت متأكد من حذف هذا السجل العلاجي؟ سيتم إرجاع الجرعة إلى المخزون.',
+      message: 'هل أنت متأكد من حذف هذا السجل العلاجي؟',
       confirmText: 'حذف السجل',
       variant: 'warning',
       onConfirm: async () => { const res = await deleteMedicalRecord(id); if (!res.success) alert(res.error); },
@@ -147,12 +178,18 @@ export default function MedicalClientView({
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex bg-slate-200/50 p-1 rounded-xl">
+        <div className="flex bg-slate-200/50 p-1 rounded-xl gap-1">
           <button 
             onClick={() => setActiveTab('inventory')}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'inventory' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
             مخزون الأدوية
+          </button>
+          <button 
+            onClick={() => setActiveTab('orders')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+          >
+            طلبيات الشراء
           </button>
           <button 
             onClick={() => setActiveTab('records')}
@@ -169,8 +206,8 @@ export default function MedicalClientView({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="البحث بالأسم أو المورد أو الوحدة..."
-            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white"
+            placeholder="البحث..."
+            className="w-full ps-9 pe-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
           />
         </div>
 
@@ -180,14 +217,24 @@ export default function MedicalClientView({
               onClick={() => setIsAddMedOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition"
             >
-              <Plus className="w-5 h-5" />إضافة دواء</button>
+              <Plus className="w-5 h-5" />إضافة دواء
+            </button>
+          )}
+          {activeTab === 'orders' && (
+            <button
+              onClick={() => setIsAddOrderOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition"
+            >
+              <ShoppingCart className="w-5 h-5" />تسجيل طلبية
+            </button>
           )}
           {activeTab === 'records' && (
             <button
               onClick={() => setIsAddRecOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
             >
-              <HeartPulse className="w-5 h-5" />تسجيل علاج</button>
+              <HeartPulse className="w-5 h-5" />تسجيل علاج
+            </button>
           )}
         </div>
       </div>
@@ -202,10 +249,7 @@ export default function MedicalClientView({
                 <tr>
                   {[
                     { label: 'اسم الدواء', key: 'name' },
-                    { label: 'المورد / الشركة', key: 'supplier' },
-                    { label: 'المخزون الحالي', key: 'currentStock' },
-                    { label: 'الوحدة', key: 'unit' },
-                    { label: 'تاريخ الصلاحية', key: 'expirationDate' },
+                    { label: 'المخزون المتوفر (بالوحدات)', key: 'stocks' },
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortMeds(col.key)} className="px-8 py-5 cursor-pointer hover:bg-slate-100 transition select-none">
                       <div className="flex items-center gap-1">
@@ -219,9 +263,21 @@ export default function MedicalClientView({
               </thead>
             )}
 
+            {/* ORDERS TABLE HEADER */}
+            {activeTab === 'orders' && (
+              <thead className="bg-rose-50/50 border-b border-rose-100 text-slate-600 font-medium">
+                <tr>
+                  {['التاريخ', 'اسم الدواء', 'الكمية', 'سعر الوحدة', 'التكلفة الإجمالية'].map((label) => (
+                    <th key={label} className="px-8 py-5">{label}</th>
+                  ))}
+                  <th className="px-8 py-5 text-end">الإجراءات</th>
+                </tr>
+              </thead>
+            )}
+
             {/* RECORDS TABLE HEADER */}
             {activeTab === 'records' && (
-              <thead className="bg-rose-50/50 border-b border-rose-100 text-slate-600 font-medium">
+              <thead className="bg-indigo-50/50 border-b border-indigo-100 text-slate-600 font-medium">
                 <tr>
                   {[
                     { label: 'التاريخ', key: 'treatmentDate' },
@@ -231,10 +287,10 @@ export default function MedicalClientView({
                     { label: 'الجرعة المعطاة', key: 'dose' },
                     { label: 'ملاحظات', key: 'notes' }
                   ].map((col) => (
-                    <th key={col.key} onClick={() => handleSortRecs(col.key)} className="px-8 py-5 cursor-pointer hover:bg-rose-100/50 transition select-none">
+                    <th key={col.key} onClick={() => handleSortRecs(col.key)} className="px-8 py-5 cursor-pointer hover:bg-indigo-100/50 transition select-none">
                       <div className="flex items-center gap-1">
                         {col.label}
-                        {recSortCol === col.key && (recSortDesc ? <ChevronDown className="w-4 h-4 text-rose-500" /> : <ChevronUp className="w-4 h-4 text-rose-500" />)}
+                        {recSortCol === col.key && (recSortDesc ? <ChevronDown className="w-4 h-4 text-indigo-500" /> : <ChevronUp className="w-4 h-4 text-indigo-500" />)}
                       </div>
                     </th>
                   ))}
@@ -246,36 +302,67 @@ export default function MedicalClientView({
             <tbody className="divide-y divide-slate-100">
               
               {/* INVENTORY ROWS */}
-              {activeTab === 'inventory' && filteredMedicines.map((med: MedicineData) => (
-                <tr key={med.id} className="hover:bg-slate-50 transition">
-                  <td className="px-8 py-5 font-semibold text-slate-900 flex items-center gap-2"><Syringe className="w-4 h-4 text-slate-400"/> {med.name}</td>
-                  <td className="px-8 py-5 text-slate-600">{med.supplier || '-'}</td>
-                  <td className="px-8 py-5 font-bold text-emerald-600">{med.currentStock.toFixed(2)}</td>
-                  <td className="px-8 py-5 text-slate-500">{med.unit}</td>
-                  <td className="px-8 py-5 text-slate-600">
-                    {med.expirationDate ? new Date(med.expirationDate).toLocaleDateString() : '-'}
-                  </td>
+              {activeTab === 'inventory' && filteredMedicines.map((med: MedicineData) => {
+                const stockEntries = med.stocks ? Object.entries(med.stocks) : [];
+                return (
+                  <tr key={med.id} className="hover:bg-slate-50 transition">
+                    <td className="px-8 py-5 font-semibold text-slate-900 flex items-center gap-2"><Syringe className="w-4 h-4 text-slate-400"/> {med.name}</td>
+                    <td className="px-8 py-5">
+                      {stockEntries.length > 0
+                        ? <div className="flex flex-wrap gap-2">
+                            {stockEntries.map(([unit, qty]) => {
+                              const q = qty as number;
+                              return (
+                                <span key={unit} className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${
+                                  q < 0 ? 'bg-rose-100 text-rose-700' : q === 0 ? 'bg-slate-100 text-slate-500' : 'bg-emerald-100 text-emerald-700'
+                                }`}>
+                                  {q.toFixed(2)} {unit}
+                                  {q < 0 && <span className="text-xs">⚠️</span>}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        : <span className="text-slate-400 text-sm">لا يوجد مخزون</span>}
+                    </td>
+                    <td className="px-8 py-5 text-end">
+                      <button onClick={() => setEditMedData(med)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDeleteMedicine(med.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                );
+              })}
+              {activeTab === 'inventory' && filteredMedicines.length === 0 && (
+                <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500">لا يوجد مخزون أدوية.</td></tr>
+              )}
+
+              {/* ORDERS ROWS */}
+              {activeTab === 'orders' && filteredOrders.map((order: MedicalOrderData) => (
+                <tr key={order.id} className="hover:bg-rose-50/20 transition">
+                  <td className="px-8 py-5 text-slate-600">{new Date(order.date).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 font-medium text-slate-900">{order.medicine?.name}</td>
+                  <td className="px-8 py-5 font-semibold text-rose-600">+{order.quantity?.toFixed(2)} {order.unit}</td>
+                  <td className="px-8 py-5 text-slate-600">ج.م {order.pricePerUnit?.toFixed(2)}</td>
+                  <td className="px-8 py-5 font-bold text-slate-800">ج.م {order.totalCost?.toFixed(2)}</td>
                   <td className="px-8 py-5 text-end">
-                    <button onClick={() => setEditMedData(med)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteMedicine(med.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDeleteOrder(order.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
-              {activeTab === 'inventory' && filteredMedicines.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">لا يوجد مخزون أدوية.</td></tr>
+              {activeTab === 'orders' && filteredOrders.length === 0 && (
+                <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">لا توجد طلبيات شراء مسجلة.</td></tr>
               )}
 
               {/* RECORD ROWS */}
               {activeTab === 'records' && filteredRecords.map((rec: MedicalRecordData) => (
-                <tr key={rec.id} className="hover:bg-rose-50/20 transition">
+                <tr key={rec.id} className="hover:bg-indigo-50/20 transition">
                   <td className="px-8 py-5 text-slate-600">{new Date(rec.treatmentDate).toLocaleDateString()}</td>
-                  <td className="px-8 py-5 font-medium text-slate-900">{rec.cattle.tagNumber}</td>
-                  <td className="px-8 py-5 font-medium text-indigo-700">{rec.medicine.name}</td>
+                  <td className="px-8 py-5 font-medium text-slate-900">{rec.cattle?.tagNumber}</td>
+                  <td className="px-8 py-5 font-medium text-indigo-700">{rec.medicine?.name}</td>
                   <td className="px-8 py-5 text-slate-700">{rec.type}</td>
-                  <td className="px-8 py-5 font-bold text-rose-600">{rec.dose.toFixed(2)} {rec.medicine.unit}</td>
+                  <td className="px-8 py-5 font-bold text-rose-600">{rec.dose?.toFixed(2)} {rec.unit || ''}</td>
                   <td className="px-8 py-5 text-slate-500 truncate max-w-xs">{rec.notes || '-'}</td>
                   <td className="px-8 py-5 text-end">
-                    <button onClick={() => setEditRecData(rec)} className="p-1.5 text-slate-600 hover:bg-rose-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => setEditRecData(rec)} className="p-1.5 text-slate-600 hover:bg-indigo-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => handleDeleteRecord(rec.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
@@ -293,7 +380,9 @@ export default function MedicalClientView({
       <AddMedicineDialog isOpen={isAddMedOpen} onClose={() => setIsAddMedOpen(false)} />
       {editMedData && <EditMedicineDialog isOpen={!!editMedData} onClose={() => setEditMedData(null)} medicine={editMedData} />}
       
-      <AddRecordDialog isOpen={isAddRecOpen} onClose={() => setIsAddRecOpen(false)} cattle={cattleData} medicines={initialMedicines} />
+      <AddPurchaseOrderDialog isOpen={isAddOrderOpen} onClose={() => setIsAddOrderOpen(false)} medicines={initialMedicines} />
+
+      <AddRecordDialog isOpen={isAddRecOpen} onClose={() => setIsAddRecOpen(false)} cattle={cattleData} medicines={initialMedicines} orders={initialOrders} />
       {editRecData && <EditRecordDialog isOpen={!!editRecData} onClose={() => setEditRecData(null)} record={editRecData} cattle={cattleData} medicines={initialMedicines} />}
       <ConfirmDialog
         isOpen={confirmState.isOpen} onClose={closeConfirm} onConfirm={confirmState.onConfirm}

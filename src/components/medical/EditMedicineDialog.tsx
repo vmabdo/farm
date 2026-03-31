@@ -43,49 +43,7 @@ export default function EditMedicineDialog({ isOpen, onClose, medicine }: { isOp
               className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">الشركة المصنعة / المورد</label>
-            <input 
-              name="supplier" 
-              defaultValue={medicine.supplier || ''}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">المخزون الحالي *</label>
-            <input 
-              name="currentStock" 
-              type="number" 
-              min="0"
-              step="0.01"
-              required 
-              defaultValue={medicine.currentStock}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">الوحدة المرجعية *</label>
-            <select
-              name="unit"
-              required
-              defaultValue={medicine.unit}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-white"
-            >
-              <option value="ML">مل (ML)</option>
-              <option value="MG">جرام / ملجم (MG)</option>
-              <option value="DOSES">جرعات</option>
-              <option value="BOTTLES">زجاجات</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">تاريخ الصلاحية</label>
-            <input 
-              name="expirationDate" 
-              type="date" 
-              defaultValue={medicine.expirationDate ? new Date(medicine.expirationDate).toISOString().split('T')[0] : ''}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition" 
-            />
-          </div>
+
 
           <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button 

@@ -56,8 +56,24 @@ export default function FeedClientView({
   // ==========================
   // Memoized Sorted Data
   // ==========================
+  const aggregatedItems = useMemo(() => {
+    return initialItems.map(item => {
+      const stocks: Record<string, number> = {};
+      
+      initialOrders.filter((o: any) => o.feedId === item.id || o.feedItem?.id === item.id).forEach((o: any) => {
+        stocks[o.unit] = (stocks[o.unit] || 0) + o.quantity;
+      });
+      
+      initialConsumptions.filter((c: any) => c.feedItemId === item.id || c.feedItem?.id === item.id).forEach((c: any) => {
+        stocks[c.unit] = (stocks[c.unit] || 0) - c.quantity;
+      });
+
+      return { ...item, stocks };
+    });
+  }, [initialItems, initialOrders, initialConsumptions]);
+
   const sortedItems = useMemo(() => {
-    return [...initialItems].sort((a, b) => {
+    return [...aggregatedItems].sort((a, b) => {
       let valA = a[itemsSortCol];
       let valB = b[itemsSortCol];
       
@@ -68,7 +84,7 @@ export default function FeedClientView({
       if (valA > valB) return itemsSortDesc ? -1 : 1;
       return 0;
     });
-  }, [initialItems, itemsSortCol, itemsSortDesc]);
+  }, [aggregatedItems, itemsSortCol, itemsSortDesc]);
 
   const sortedOrders = useMemo(() => {
     return [...initialOrders].sort((a, b) => {
@@ -112,7 +128,7 @@ export default function FeedClientView({
     const q = search.toLowerCase().trim();
     if (!q) return sortedItems;
     return sortedItems.filter((i) =>
-      [i.name, i.type, i.unit].filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
+      [i.name, i.type, Object.keys(i.stocks).join(' ')].filter(Boolean).some((v) => String(v).toLowerCase().includes(q))
     );
   }, [sortedItems, search]);
 
@@ -192,7 +208,7 @@ export default function FeedClientView({
             onClick={() => setActiveTab('orders')}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
           >
-            طلبات الشراء
+            طلبيات الشراء
           </button>
           <button 
             onClick={() => setActiveTab('consumption')}
@@ -228,7 +244,7 @@ export default function FeedClientView({
               onClick={() => setIsAddOrderOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
             >
-              <TrendingUp className="w-5 h-5" /> تسجيل طلب
+              <TrendingUp className="w-5 h-5" /> تسجيل طلبية
             </button>
           )}
           {activeTab === 'consumption' && (
@@ -252,9 +268,7 @@ export default function FeedClientView({
                   {[
                     { label: 'اسم العلف', key: 'name' },
                     { label: 'الفئة', key: 'type' },
-                    { label: 'المخزون الحالي', key: 'currentStock' },
-                    { label: 'الوحدة', key: 'unit' },
-                    { label: 'سعر اليوم (ج.م)', key: 'dailyPrice' },
+                    { label: 'المخزون الحالي المتوفر (بالوحدات)', key: 'stocks' },
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortItems(col.key)} className="px-8 py-5 cursor-pointer hover:bg-slate-100 transition select-none">
                       <div className="flex items-center gap-1">
@@ -273,10 +287,11 @@ export default function FeedClientView({
               <thead className="bg-indigo-50/50 border-b border-indigo-100 text-slate-600 font-medium">
                 <tr>
                   {[
-                    { label: 'التاريخ', key: 'orderDate' },
+                    { label: 'التاريخ', key: 'date' },
                     { label: 'اسم العلف', key: 'feedItem' },
-                    { label: 'الكمية المضافة', key: 'quantity' },
-                    { label: 'التكلفة (ج.م)', key: 'cost' },
+                    { label: 'الكمية', key: 'quantity' },
+                    { label: 'سعر الوحدة', key: 'pricePerUnit' },
+                    { label: 'التكلفة الإجمالية', key: 'totalCost' },
                     { label: 'المورد', key: 'supplier' }
                   ].map((col) => (
                     <th key={col.key} onClick={() => handleSortOrders(col.key)} className="px-8 py-5 cursor-pointer hover:bg-indigo-100/50 transition select-none">
@@ -316,19 +331,37 @@ export default function FeedClientView({
             <tbody className="divide-y divide-slate-100">
               
               {/* INVENTORY ROWS */}
-              {activeTab === 'inventory' && filteredItems.map((item: FeedItem) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition">
-                  <td className="px-8 py-5 font-semibold text-slate-900 flex items-center gap-2"><Package className="w-4 h-4 text-slate-400"/> {item.name}</td>
-                  <td className="px-8 py-5 text-slate-600">{item.type}</td>
-                  <td className="px-8 py-5 font-bold text-emerald-600">{item.currentStock.toFixed(2)}</td>
-                  <td className="px-8 py-5 text-slate-500">{item.unit}</td>
-                  <td className="px-8 py-5 font-medium text-slate-600">{item.dailyPrice ? `ج.م ${item.dailyPrice.toFixed(2)}` : '-'}</td>
-                  <td className="px-8 py-5 text-end">
-                    <button onClick={() => setEditItemData(item)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
-                  </td>
-                </tr>
-              ))}
+              {activeTab === 'inventory' && filteredItems.map((item: FeedItem) => {
+                const stockEntries = item.stocks ? Object.entries(item.stocks) : [];
+                const hasNegative = stockEntries.some(([, qty]) => (qty as number) < 0);
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50 transition">
+                    <td className="px-8 py-5 font-semibold text-slate-900 flex items-center gap-2"><Package className="w-4 h-4 text-slate-400"/> {item.name}</td>
+                    <td className="px-8 py-5 text-slate-600">{item.type}</td>
+                    <td className="px-8 py-5">
+                      {stockEntries.length > 0
+                        ? <div className="flex flex-wrap gap-2">
+                            {stockEntries.map(([unit, qty]) => {
+                              const q = qty as number;
+                              return (
+                                <span key={unit} className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${
+                                  q < 0 ? 'bg-rose-100 text-rose-700' : q === 0 ? 'bg-slate-100 text-slate-500' : 'bg-emerald-100 text-emerald-700'
+                                }`}>
+                                  {q.toFixed(2)} {unit}
+                                  {q < 0 && <span className="text-xs">⚠️</span>}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        : <span className="text-slate-400 text-sm">لا يوجد مخزون</span>}
+                    </td>
+                    <td className="px-8 py-5 text-end">
+                      <button onClick={() => setEditItemData(item)} className="p-1.5 text-slate-600 hover:bg-slate-200 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDeleteItem(item.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl transition"><Trash2 className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                );
+              })}
               {activeTab === 'inventory' && filteredItems.length === 0 && (
                 <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">لا توجد مواد علف مضافة.</td></tr>
               )}
@@ -336,10 +369,11 @@ export default function FeedClientView({
               {/* ORDERS ROWS */}
               {activeTab === 'orders' && filteredOrders.map((order: FeedOrder) => (
                 <tr key={order.id} className="hover:bg-indigo-50/20 transition">
-                  <td className="px-8 py-5 text-slate-600">{new Date(order.orderDate).toLocaleDateString()}</td>
-                  <td className="px-8 py-5 font-medium text-slate-900">{order.feedItem.name}</td>
-                  <td className="px-8 py-5 font-semibold text-indigo-600">+{order.quantity.toFixed(2)} {order.feedItem.unit}</td>
-                  <td className="px-8 py-5 text-slate-600">ج.م {order.cost.toFixed(2)}</td>
+                  <td className="px-8 py-5 text-slate-600">{new Date(order.date || order.orderDate).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 font-medium text-slate-900">{order.feedItem?.name}</td>
+                  <td className="px-8 py-5 font-semibold text-indigo-600">+{order.quantity?.toFixed(2)} {order.unit}</td>
+                  <td className="px-8 py-5 text-slate-600">ج.م {order.pricePerUnit?.toFixed(2)}</td>
+                  <td className="px-8 py-5 font-bold text-slate-800">ج.م {order.totalCost?.toFixed(2)}</td>
                   <td className="px-8 py-5 text-slate-500">{order.supplier || '-'}</td>
                   <td className="px-8 py-5 text-end">
                     <button onClick={() => setEditOrderData(order)} className="p-1.5 text-slate-600 hover:bg-indigo-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
@@ -355,8 +389,8 @@ export default function FeedClientView({
               {activeTab === 'consumption' && filteredConsumptions.map((cons: FeedConsumption) => (
                 <tr key={cons.id} className="hover:bg-amber-50/20 transition">
                   <td className="px-8 py-5 text-slate-600">{new Date(cons.date).toLocaleDateString()}</td>
-                  <td className="px-8 py-5 font-medium text-slate-900">{cons.feedItem.name}</td>
-                  <td className="px-8 py-5 font-semibold text-amber-600">-{cons.quantity.toFixed(2)} {cons.feedItem.unit}</td>
+                  <td className="px-8 py-5 font-medium text-slate-900">{cons.feedItem?.name}</td>
+                  <td className="px-8 py-5 font-semibold text-amber-600">-{cons.quantity?.toFixed(2)} {cons.unit}</td>
                   <td className="px-8 py-5 text-slate-500 truncate max-w-xs">{cons.notes || '-'}</td>
                   <td className="px-8 py-5 text-end">
                     <button onClick={() => setEditConsData(cons)} className="p-1.5 text-slate-600 hover:bg-amber-100 rounded-xl transition me-1"><Edit2 className="w-4 h-4" /></button>
@@ -380,7 +414,7 @@ export default function FeedClientView({
       <AddOrderDialog isOpen={isAddOrderOpen} onClose={() => setIsAddOrderOpen(false)} items={initialItems} />
       {editOrderData && <EditOrderDialog isOpen={!!editOrderData} onClose={() => setEditOrderData(null)} order={editOrderData} />}
       
-      <AddConsumptionDialog isOpen={isAddConsOpen} onClose={() => setIsAddConsOpen(false)} items={initialItems} />
+      <AddConsumptionDialog isOpen={isAddConsOpen} onClose={() => setIsAddConsOpen(false)} items={initialItems} orders={initialOrders} />
       {editConsData && <EditConsumptionDialog isOpen={!!editConsData} onClose={() => setEditConsData(null)} consumption={editConsData} />}
       <ConfirmDialog
         isOpen={confirmState.isOpen} onClose={closeConfirm} onConfirm={confirmState.onConfirm}

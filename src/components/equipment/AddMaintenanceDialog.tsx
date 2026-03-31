@@ -1,0 +1,90 @@
+'use client';
+
+import { useState } from 'react';
+import { createEquipmentMaintenance } from '@/app/actions/equipment';
+import { X } from 'lucide-react';
+
+export default function AddMaintenanceDialog({ isOpen, onClose, equipment }: { isOpen: boolean; onClose: () => void; equipment: any }) {
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen || !equipment) return null;
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    formData.set('equipmentId', equipment.id);
+    const res = await createEquipmentMaintenance(formData);
+    setLoading(false);
+    if (res.success) {
+      onClose();
+    } else {
+      alert(res.error);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full animate-in fade-in zoom-in-95 duration-300 max-w-md overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center p-6 border-b border-slate-100">
+          <div>
+            <h2 className="text-xl font-bold text-slate-800">تسجيل صيانة</h2>
+            <p className="text-sm text-slate-500 mt-0.5">{equipment.name}</p>
+          </div>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={onSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">وصف الصيانة *</label>
+            <textarea
+              name="description"
+              required
+              rows={3}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition resize-none"
+              placeholder="مثال: تغيير زيت، إصلاح محرك..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">التكلفة (ج.م)</label>
+            <input
+              name="cost"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue="0"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">التاريخ *</label>
+            <input
+              name="date"
+              type="date"
+              required
+              defaultValue={new Date().toISOString().split('T')[0]}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            />
+          </div>
+
+          <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition"
+            >إلغاء</button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-5 py-2 bg-amber-600 text-white font-medium rounded-xl hover:bg-amber-700 transition disabled:opacity-50"
+            >
+              {loading ? 'جاري التسجيل...' : 'تسجيل الصيانة'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
