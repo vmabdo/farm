@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import MedicalClientView from '@/components/medical/MedicalClientView';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function MedicalPage() {
   const [medicines, records, cattle, purchaseOrders] = await Promise.all([

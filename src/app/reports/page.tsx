@@ -1,5 +1,8 @@
 import ReportsClientView from '@/components/reports/ReportsClientView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = {
   title: 'التقارير | Farm ERP',
 };

@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import SettingsClientView from '@/components/settings/SettingsClientView';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'الإعدادات | Farm ERP',

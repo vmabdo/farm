@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import FeedClientView from '@/components/feed/FeedClientView';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function FeedPage() {
   const [feedItems, feedOrders, feedConsumptions] = await Promise.all([

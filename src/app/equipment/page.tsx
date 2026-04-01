@@ -1,6 +1,9 @@
 import prisma from '@/lib/prisma';
 import EquipmentClientView from '@/components/equipment/EquipmentClientView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = {
   title: 'المعدات والآلات | Farm ERP',
 };

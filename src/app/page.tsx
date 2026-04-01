@@ -4,6 +4,7 @@ import { subMonths, format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'لوحة القيادة | Farm ERP',

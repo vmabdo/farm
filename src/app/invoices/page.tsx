@@ -1,6 +1,9 @@
 import prisma from '@/lib/prisma';
 import InvoicesClientView from '@/components/invoices/InvoicesClientView';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = {
   title: 'الفواتير | Farm ERP',
 };

@@ -36,6 +36,8 @@ export async function createCattle(formData: FormData) {
     });
 
     revalidatePath('/cattle');
+    revalidatePath('/invoices'); // keep invoice dropdown fresh
+    revalidatePath('/');         // update dashboard counters
     return { success: true };
   } catch (error) {
     console.error('Error creating cattle:', error);
@@ -63,6 +65,8 @@ export async function updateCattle(id: string, formData: FormData) {
     });
 
     revalidatePath('/cattle');
+    revalidatePath('/invoices'); // keep invoice dropdown fresh
+    revalidatePath('/');         // update dashboard counters
     return { success: true };
   } catch (error) {
     console.error('Error updating cattle:', error);
@@ -82,6 +86,8 @@ export async function deleteCattle(id: string) {
     });
 
     revalidatePath('/cattle');
+    revalidatePath('/invoices'); // keep invoice dropdown fresh
+    revalidatePath('/');         // update dashboard counters
     return { success: true };
   } catch (error) {
     console.error('Error deleting cattle:', error);
@@ -138,6 +144,7 @@ export async function addWeightRecord(cattleId: string, formData: FormData) {
     });
 
     revalidatePath('/cattle');
+    revalidatePath('/');         // update dashboard counters
     return { success: true };
   } catch (error) {
     console.error('Error adding weight record:', error);
@@ -152,6 +159,8 @@ export async function markDeceased(id: string) {
       data: { status: 'DECEASED' }
     });
     revalidatePath('/cattle');
+    revalidatePath('/invoices'); // remove deceased from invoice dropdown
+    revalidatePath('/');         // update dashboard counters
     return { success: true };
   } catch (error) {
     console.error('Error marking deceased:', error);

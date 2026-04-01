@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import CattleClientView from '@/components/cattle/CattleClientView';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function CattlePage() {
   const [cattleData, breeds] = await Promise.all([

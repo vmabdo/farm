@@ -48,6 +48,7 @@ export async function createInvoice(formData: FormData) {
 
     revalidatePath('/invoices');
     revalidatePath('/cattle');
+    revalidatePath('/');         // update dashboard revenue counter
     return { success: true };
   } catch (error) {
     console.error('Error creating invoice:', error);
@@ -59,6 +60,7 @@ export async function deleteInvoice(id: string) {
   try {
     await prisma.invoice.delete({ where: { id } });
     revalidatePath('/invoices');
+    revalidatePath('/');         // update dashboard revenue counter
     return { success: true };
   } catch (error) {
     console.error('Error deleting invoice:', error);

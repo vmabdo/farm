@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import ExpensesClientView from '@/components/expenses/ExpensesClientView';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'المصروفات العامة | Farm ERP',
