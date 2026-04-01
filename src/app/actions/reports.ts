@@ -24,7 +24,7 @@ export async function getReportData(startIso: string, endIso: string) {
   const totalRevenue = invoiceAgg._sum.netAmount ?? 0;
   const totalGrossRevenue = invoiceAgg._sum.totalAmount ?? 0;
 
-  // ── Feed PO costs (PHASE 3: sum totalCost of FeedPurchaseOrders) ──────
+  // ── Feed PO costs ──────────────────────────────────────────────────────
   const feedOrders = await prisma.feedPurchaseOrder.findMany({
     where: { date: dateFilter },
     include: { feedItem: true },
@@ -32,7 +32,7 @@ export async function getReportData(startIso: string, endIso: string) {
   });
   const totalFeedCost = feedOrders.reduce((s, o) => s + (o.totalCost ?? 0), 0);
 
-  // ── Medical PO costs (PHASE 3: sum totalCost of MedicalPurchaseOrders) ─
+  // ── Medical PO costs ───────────────────────────────────────────────────
   const medicalOrders = await prisma.medicalPurchaseOrder.findMany({
     where: { date: dateFilter },
     include: { medicine: true },
@@ -40,7 +40,7 @@ export async function getReportData(startIso: string, endIso: string) {
   });
   const totalMedicalCost = medicalOrders.reduce((s, o) => s + (o.totalCost ?? 0), 0);
 
-  // ── Equipment Maintenance costs (PHASE 3) ──────────────────────────────
+  // ── Equipment Maintenance costs ────────────────────────────────────────
   const maintenanceRecords = await prisma.equipmentMaintenance.findMany({
     where: { date: dateFilter },
     include: { equipment: true },
@@ -73,13 +73,42 @@ export async function getReportData(startIso: string, endIso: string) {
     orderBy: { travelDate: 'desc' },
   });
 
+  // ── General Expenses (المصروفات العامة) ───────────────────────────────
+  const generalExpenses = await prisma.generalExpense.findMany({
+    where: { date: dateFilter },
+    orderBy: { date: 'desc' },
+  });
+  const totalGeneralExpenses = generalExpenses.reduce(
+    (s, e) => s + (e.cost ?? 0), 0
+  );
+
+  // ── Deceased Livestock Loss (خسائر النافق) ────────────────────────────
+  // Fetch all calves marked DECEASED within the date range, include breed
+  const deceasedCattleRecords = await prisma.cattle.findMany({
+    where: { status: 'DECEASED', updatedAt: dateFilter },
+    include: { breed: true },
+    orderBy: { updatedAt: 'desc' },
+  });
+  // Value = currentWeight (or entryWeight fallback) × breed.pricePerKg
+  const totalDeceasedLoss = deceasedCattleRecords.reduce((s, c) => {
+    const weight = c.currentWeight ?? c.entryWeight ?? 0;
+    const pricePerKg = c.breed?.pricePerKg ?? 0;
+    return s + weight * pricePerKg;
+  }, 0);
+
+  // ── Farm Settings (for print branding) ────────────────────────────────
+  const farmSettings = await prisma.farmSettings.findUnique({ where: { id: 1 } })
+    ?? { id: 1, farmName: 'مزرعتي', logoData: null };
+
   // ── P&L ───────────────────────────────────────────────────────────────
   const totalExpenses =
     totalFeedCost +
     totalMedicalCost +
     totalMaintenanceCost +
     totalWorkerCost +
-    totalTransportCost;
+    totalTransportCost +
+    totalGeneralExpenses +
+    totalDeceasedLoss;
 
   const netProfit = totalRevenue - totalExpenses;
 
@@ -96,8 +125,11 @@ export async function getReportData(startIso: string, endIso: string) {
       maintenanceCost: totalMaintenanceCost,
       workerCost: totalWorkerCost,
       transportCost: totalTransportCost,
+      generalExpensesCost: totalGeneralExpenses,
+      deceasedLoss: totalDeceasedLoss,
       netProfit,
     },
+    deceasedCattleRecords,
     feedOrders,
     medicalOrders,
     maintenanceRecords,
@@ -109,5 +141,7 @@ export async function getReportData(startIso: string, endIso: string) {
       total: totalTransportCost,
       details: transportDetails,
     },
+    generalExpenses,
+    farmSettings,
   };
 }

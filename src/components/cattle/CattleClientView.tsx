@@ -192,7 +192,7 @@ export default function CattleClientView({ rawData, breeds }: { rawData: CattleD
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
               <tr>
                 {[
-                  { label: 'رقم البطاقة', key: 'tagNumber' },
+                  { label: 'رقم العجل', key: 'tagNumber' },
                   { label: 'السلالة', key: 'breed' },
                   { label: 'تاريخ الدخول', key: 'entryDate' },
                   { label: 'الوزن المبدئي (كجم)', key: 'entryWeight' },

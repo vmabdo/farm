@@ -85,7 +85,7 @@ export default async function Home() {
       type: 'CATTLE',
       date: c.createdAt,
       title: 'تمت إضافة عجل جديد',
-      subtitle: `رقم البطاقة: ${c.tagNumber} | السلالة: ${c.breed?.name || 'غير محدد'}`,
+      subtitle: `رقم العجل: ${c.tagNumber} | السلالة: ${c.breed?.name || 'غير محدد'}`,
       amountStr: `${c.entryWeight} كجم`
     })),
     ...recentInvoicesRaw.map(inv => ({

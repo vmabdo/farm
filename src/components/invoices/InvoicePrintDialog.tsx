@@ -1,8 +1,20 @@
 'use client';
 
-import { X, Printer, Tractor } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Printer } from 'lucide-react';
+import { getFarmSettings } from '@/app/actions/settings';
+
+type FarmSettings = { id: number; farmName: string; logoData: string | null };
 
 export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpen: boolean; onClose: () => void; invoice: any }) {
+  const [farmSettings, setFarmSettings] = useState<FarmSettings>({ id: 1, farmName: 'مزرعتي', logoData: null });
+
+  useEffect(() => {
+    if (isOpen) {
+      getFarmSettings().then(setFarmSettings).catch(() => {});
+    }
+  }, [isOpen]);
+
   if (!isOpen || !invoice) return null;
 
   let items = [];
@@ -15,9 +27,9 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
   const invoiceNumber = invoice.serialNumber ? `#INV-${invoice.serialNumber}` : `INV-${invoice.id.substring(invoice.id.length - 6).toUpperCase()}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 backdrop-blur-sm p-4 sm:p-8 print:p-0 print:bg-white print:overflow-visible">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 backdrop-blur-sm p-4 sm:p-8 print:block print:p-0 print:bg-white print:overflow-visible print:h-auto print:relative">
       {/* Container - takes full width on print */}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-auto relative print:m-0 print:shadow-none print:w-full print:absolute print:inset-0 print:rounded-none flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-auto relative print:m-0 print:shadow-none print:w-full print:max-w-none print:rounded-none print:block print:h-auto flex flex-col" onClick={(e) => e.stopPropagation()}>
         
         {/* Print-hidden header */}
         <div className="flex justify-between items-center p-4 border-b border-slate-100 print:hidden bg-slate-50 sticky top-0 z-10">
@@ -34,15 +46,23 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
         {/* ===================== PRINTABLE A4 AREA ===================== */}
         <div dir="rtl" className="flex-1 p-8 sm:p-12 print:p-8 bg-white text-slate-900 mx-auto w-full max-w-[210mm] min-h-[297mm] shadow-inner print:shadow-none">
           
-          {/* Header */}
+          {/* Header — dynamic branding */}
           <div className="flex justify-between items-start mb-12 border-b-2 border-slate-900 pb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center text-white">
-                <Tractor className="w-8 h-8" />
-              </div>
+            <div className="flex items-center gap-4">
+              {farmSettings.logoData ? (
+                <img
+                  src={farmSettings.logoData}
+                  alt="شعار المزرعة"
+                  className="w-16 h-16 object-contain rounded-xl border border-slate-200 bg-slate-50"
+                />
+              ) : (
+                <div className="w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center text-white text-2xl font-black">
+                  {(farmSettings.farmName || 'م').charAt(0)}
+                </div>
+              )}
               <div>
-                <h1 className="text-3xl font-black uppercase tracking-tight text-slate-900">اسم الشركة</h1>
-                <p className="text-slate-500 font-medium">مزرعة نموذجية ممتازة</p>
+                <h1 className="text-3xl font-black tracking-tight text-slate-900">{farmSettings.farmName}</h1>
+                <p className="text-slate-500 font-medium mt-0.5">نظام إدارة التسمين</p>
               </div>
             </div>
             <div className="text-left">
@@ -61,8 +81,8 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
             </div>
             <div className="text-left">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">الدفع إلى:</p>
-              <h3 className="text-lg font-bold text-slate-900">اسم الشركة</h3>
-              <p className="text-slate-600 mt-1">123 طريق الزراعة<br/>القاهرة، مصر</p>
+              <h3 className="text-lg font-bold text-slate-900">{farmSettings.farmName}</h3>
+              <p className="text-slate-600 mt-1">مصر</p>
             </div>
           </div>
 
@@ -72,8 +92,9 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
               <thead className="bg-slate-100 text-sm font-bold uppercase tracking-wider text-slate-600">
                 <tr>
                   <th className="px-8 py-5 border-b border-slate-200 text-center w-16">#</th>
-                  <th className="px-8 py-5 border-b border-slate-200">البيان</th>
-                  <th className="px-8 py-5 border-b border-slate-200 text-left w-32">الكمية</th>
+                  <th className="px-8 py-5 border-b border-slate-200">رقم العجل</th>
+                  <th className="px-8 py-5 border-b border-slate-200">السلالة</th>
+                  <th className="px-8 py-5 border-b border-slate-200 text-left w-32">الكمية (كجم)</th>
                   <th className="px-8 py-5 border-b border-slate-200 text-left w-32">سعر الوحدة</th>
                   <th className="px-8 py-5 border-b border-slate-200 text-left w-40">المجموع</th>
                 </tr>
@@ -83,7 +104,8 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
                   <tr key={idx}>
                     <td className="px-8 py-5 text-center text-slate-400 font-medium">{idx + 1}</td>
                     <td className="px-8 py-5 font-semibold text-slate-900">{item.name}</td>
-                    <td className="px-8 py-5 text-left">{item.quantity}</td>
+                    <td className="px-8 py-5 text-slate-600">{item.breed || <span className="text-slate-300">-</span>}</td>
+                    <td className="px-8 py-5 text-left">{Number(item.quantity).toFixed(2)}</td>
                     <td className="px-8 py-5 text-left">{(item.quantity ? (item.price / item.quantity) : 0).toFixed(2)}</td>
                     <td className="px-8 py-5 text-left font-semibold">{Number(item.price).toFixed(2)}</td>
                   </tr>
@@ -122,7 +144,7 @@ export default function InvoicePrintDialog({ isOpen, onClose, invoice }: { isOpe
 
           {/* Footer */}
           <div className="mt-20 pt-8 border-t border-slate-200 text-center text-slate-400 text-sm">
-            <p>شكراً لتعاملكم معنا!</p>
+            <p>شكراً لتعاملكم مع <span className="font-semibold text-slate-600">{farmSettings.farmName}</span>!</p>
             <p className="mt-1 font-medium">يستحق الدفع خلال 15 يوماً من تاريخ الفاتورة.</p>
           </div>
 

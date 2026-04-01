@@ -6,13 +6,13 @@ import { X, Plus, Trash2 } from 'lucide-react';
 
 export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { isOpen: boolean; onClose: () => void; cattle?: any[] }) {
   const [loading, setLoading] = useState(false);
-  const [items, setItems] = useState([{ name: '', quantity: 1, price: 0 }]);
+  const [items, setItems] = useState([{ name: '', quantity: 1, price: 0, breed: '' }]);
   const [discount, setDiscount] = useState(0);
 
   if (!isOpen) return null;
 
   const handleAddItem = () => {
-    setItems([...items, { name: '', quantity: 1, price: 0 }]);
+    setItems([...items, { name: '', quantity: 1, price: 0, breed: '' }]);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -41,7 +41,7 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
     setLoading(false);
     
     if (res.success) {
-      setItems([{ name: '', quantity: 1, price: 0 }]); // reset
+      setItems([{ name: '', quantity: 1, price: 0, breed: '' }]); // reset
       setDiscount(0);
       onClose();
     } else {
@@ -96,7 +96,7 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
                       <input 
                         type="text"
                         list="cattle-list"
-                        placeholder="ابحث برقم البطاقة (التاج)..."
+                        placeholder="ابحث برقم العجل..."
                         value={item.name} 
                         onChange={(e) => {
                           const tag = e.target.value;
@@ -108,12 +108,21 @@ export default function CreateInvoiceDialog({ isOpen, onClose, cattle = [] }: { 
                             const weight = calf.currentWeight || calf.entryWeight || 0;
                             newItems[idx].quantity = weight;
                             newItems[idx].price = parseFloat((pricePerKg * weight).toFixed(2));
+                            newItems[idx].breed = calf.breed?.name || '';
+                          } else {
+                            newItems[idx].breed = '';
                           }
                           setItems(newItems);
                         }} 
                         className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 bg-white" 
                         required
                       />
+                      {item.breed && (
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <span className="text-xs text-slate-400">السلالة:</span>
+                          <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">{item.breed}</span>
+                        </div>
+                      )}
                       <datalist id="cattle-list">
                         {cattle?.map(c => (
                           <option key={c.id} value={c.tagNumber}>

@@ -11,7 +11,7 @@ export default function WeightHistoryDialog({ isOpen, onClose, cattle }: { isOpe
         <div className="flex justify-between items-center p-6 border-b border-slate-100 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-slate-800">سجل الأوزان</h2>
-            <p className="text-sm text-slate-500 mt-1">رقم البطاقة: {cattle.tagNumber}</p>
+            <p className="text-sm text-slate-500 mt-1">رقم العجل: {cattle.tagNumber}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />

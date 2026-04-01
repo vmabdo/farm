@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   ChartLine, Wheat, Users, RefreshCw, AlertCircle,
   ShoppingCart, TrendingUp, TrendingDown, Minus,
-  Printer, Truck, Wrench, Syringe,
+  Printer, Truck, Wrench, Syringe, ShoppingBag, Skull,
 } from 'lucide-react';
 import { getReportData } from '@/app/actions/reports';
 import { format } from 'date-fns';
@@ -94,11 +94,20 @@ export default function ReportsClientView() {
       </div>
 
       {/* ── Print header (only visible when printing) ─────────────────── */}
-      <div className="hidden print:block border-b-2 border-slate-300 pb-4 mb-4">
-        <h2 className="text-2xl font-black text-slate-900">تقرير المزرعة الشامل</h2>
-        <p className="text-slate-600 text-sm mt-1">
-          الفترة: {startDate} — {endDate}
-        </p>
+      <div className="hidden print:flex print:items-center print:gap-6 border-b-2 border-slate-900 pb-6 mb-4">
+        {data?.farmSettings?.logoData && (
+          <img
+            src={data.farmSettings.logoData}
+            alt="شعار المزرعة"
+            className="h-16 w-16 object-contain rounded-xl border border-slate-200"
+          />
+        )}
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">
+            {data?.farmSettings?.farmName || 'مزرعتي'}
+          </h2>
+          <p className="text-slate-600 text-sm mt-1">تقرير شامل — الفترة: {startDate} — {endDate}</p>
+        </div>
       </div>
 
       {/* ── Loading / Error states ────────────────────────────────────── */}
@@ -144,15 +153,17 @@ export default function ReportsClientView() {
               </div>
             </div>
 
-            {/* Mini breakdown — 6 items */}
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-sm">
+            {/* Mini breakdown — 7 items */}
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 text-sm">
               {[
-                { label: 'الإيرادات (صافي)',           value: data.pnl.totalRevenue,      color: 'text-emerald-700', bg: 'bg-emerald-100/70' },
-                { label: 'تكلفة طلبيات الأعلاف',       value: data.pnl.feedCost,          color: 'text-amber-700',   bg: 'bg-amber-100/70'   },
-                { label: 'تكلفة طلبيات الأدوية',       value: data.pnl.medicalCost,       color: 'text-purple-700',  bg: 'bg-purple-100/70'  },
-                { label: 'مصروفات صيانة المعدات',      value: data.pnl.maintenanceCost,   color: 'text-orange-700',  bg: 'bg-orange-100/70'  },
-                { label: 'تكاليف العمالة',              value: data.pnl.workerCost,        color: 'text-blue-700',    bg: 'bg-blue-100/70'    },
-                { label: 'مصروفات النقل',              value: data.pnl.transportCost,    color: 'text-cyan-700',    bg: 'bg-cyan-100/70'    },
+                { label: 'الإيرادات (صافي)',           value: data.pnl.totalRevenue,           color: 'text-emerald-700', bg: 'bg-emerald-100/70' },
+                { label: 'تكلفة طلبيات الأعلاف',       value: data.pnl.feedCost,               color: 'text-amber-700',   bg: 'bg-amber-100/70'   },
+                { label: 'تكلفة طلبيات الأدوية',       value: data.pnl.medicalCost,            color: 'text-purple-700',  bg: 'bg-purple-100/70'  },
+                { label: 'مصروفات صيانة المعدات',      value: data.pnl.maintenanceCost,        color: 'text-orange-700',  bg: 'bg-orange-100/70'  },
+                { label: 'تكاليف العمالة',              value: data.pnl.workerCost,             color: 'text-blue-700',    bg: 'bg-blue-100/70'    },
+                { label: 'مصروفات النقل',               value: data.pnl.transportCost,         color: 'text-cyan-700',    bg: 'bg-cyan-100/70'    },
+                { label: 'المصروفات العامة',            value: data.pnl.generalExpensesCost,   color: 'text-rose-700',    bg: 'bg-rose-100/70'    },
+                { label: 'خسائر النافق',                value: data.pnl.deceasedLoss,          color: 'text-red-700',     bg: 'bg-red-100/80'     },
               ].map((item) => (
                 <div key={item.label} className={`${item.bg} rounded-xl p-3`}>
                   <p className="text-xs text-slate-500 font-medium leading-tight">{item.label}</p>
@@ -212,7 +223,7 @@ export default function ReportsClientView() {
                 {fmt(data.pnl.totalExpenses)}
                 <span className="text-sm font-normal ms-1 text-rose-500">ج.م</span>
               </div>
-              <p className="text-xs text-slate-400">أعلاف + أدوية + صيانة + رواتب + نقل</p>
+              <p className="text-xs text-slate-400">أعلاف + أدوية + صيانة + رواتب + نقل + عامة + نافق</p>
             </div>
 
             {/* Workers */}
@@ -270,6 +281,17 @@ export default function ReportsClientView() {
                   <tr className="hover:bg-slate-50">
                     <td className="px-6 py-4 font-semibold text-cyan-700">مصروفات النقل</td>
                     <td className="px-6 py-4 text-end font-bold text-cyan-700">({fmt(data.pnl.transportCost)})</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-rose-700">المصروفات العامة</td>
+                    <td className="px-6 py-4 text-end font-bold text-rose-700">({fmt(data.pnl.generalExpensesCost)})</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="px-6 py-4 font-semibold text-red-700 flex items-center gap-2">
+                      <Skull className="w-4 h-4 inline-block text-red-600" />
+                      خسائر العجول النافقة
+                    </td>
+                    <td className="px-6 py-4 text-end font-bold text-red-600">({fmt(data.pnl.deceasedLoss)})</td>
                   </tr>
                   <tr className="hover:bg-slate-50 bg-slate-50/80">
                     <td className="px-6 py-4 font-semibold text-rose-700">إجمالي المصاريف</td>
@@ -497,6 +519,87 @@ export default function ReportsClientView() {
                     <tr className="bg-cyan-50/50 font-bold">
                       <td className="px-6 py-3 text-cyan-800" colSpan={2}>الإجمالي</td>
                       <td className="px-6 py-3 text-end text-cyan-700">{fmt(data.transport.total)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </DetailTable>
+
+            {/* ── General Expenses detail ───────────────────────────────── */}
+            <DetailTable
+              title="تفاصيل المصروفات العامة"
+              icon={<ShoppingBag className="w-4 h-4 text-rose-600" />}
+              color="bg-rose-50/50"
+            >
+              <table className="w-full text-sm">
+                <thead className="text-slate-500 bg-slate-50/50">
+                  <tr>
+                    <th className="px-6 py-3 font-medium text-start">البيان</th>
+                    <th className="px-6 py-3 font-medium text-start">التاريخ</th>
+                    <th className="px-6 py-3 font-medium text-end">التكلفة (ج.م)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.generalExpenses.length > 0 ? data.generalExpenses.map((e: any, i: number) => (
+                    <tr key={i} className="hover:bg-rose-50/20">
+                      <td className="px-6 py-4 font-semibold text-slate-800">{e.itemName}</td>
+                      <td className="px-6 py-4 text-slate-500">{new Date(e.date).toLocaleDateString('ar-EG')}</td>
+                      <td className="px-6 py-4 text-end font-bold text-rose-700">{fmt(e.cost)}</td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-400">لا توجد مصروفات عامة في هذه الفترة</td></tr>
+                  )}
+                  {data.generalExpenses.length > 0 && (
+                    <tr className="bg-rose-50/50 font-bold">
+                      <td className="px-6 py-3 text-rose-800" colSpan={2}>الإجمالي</td>
+                      <td className="px-6 py-3 text-end text-rose-700">{fmt(data.pnl.generalExpensesCost)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </DetailTable>
+
+            {/* ── Deceased Cattle Loss detail ───────────────────────────── */}
+            <DetailTable
+              title="تفاصيل خسائر العجول النافقة"
+              icon={<Skull className="w-4 h-4 text-red-600" />}
+              color="bg-red-50/60"
+            >
+              <table className="w-full text-sm">
+                <thead className="text-slate-500 bg-slate-50/50">
+                  <tr>
+                    <th className="px-6 py-3 font-medium text-start">رقم العجل</th>
+                    <th className="px-6 py-3 font-medium text-start">السلالة</th>
+                    <th className="px-6 py-3 font-medium text-start">تاريخ النفوق</th>
+                    <th className="px-6 py-3 font-medium text-end">الوزن (كجم)</th>
+                    <th className="px-6 py-3 font-medium text-end">قيمة الخسارة (ج.م)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.deceasedCattleRecords.length > 0 ? data.deceasedCattleRecords.map((c: any, i: number) => {
+                    const weight = c.currentWeight ?? c.entryWeight ?? 0;
+                    const pricePerKg = c.breed?.pricePerKg ?? 0;
+                    const loss = weight * pricePerKg;
+                    return (
+                      <tr key={i} className="hover:bg-red-50/20">
+                        <td className="px-6 py-4 font-semibold text-slate-800 font-mono">{c.tagNumber}</td>
+                        <td className="px-6 py-4 text-slate-600">{c.breed?.name || '-'}</td>
+                        <td className="px-6 py-4 text-slate-500">
+                          {new Date(c.updatedAt).toLocaleDateString('ar-EG')}
+                        </td>
+                        <td className="px-6 py-4 text-end text-slate-700 font-medium">{fmt(weight)}</td>
+                        <td className="px-6 py-4 text-end font-bold text-red-600">
+                          {pricePerKg > 0 ? fmt(loss) : <span className="text-slate-400 font-normal">لم تُحدَّد السلالة</span>}
+                        </td>
+                      </tr>
+                    );
+                  }) : (
+                    <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400">لا توجد عجول نافقة في هذه الفترة</td></tr>
+                  )}
+                  {data.deceasedCattleRecords.length > 0 && (
+                    <tr className="bg-red-50/70 font-bold border-t-2 border-red-200">
+                      <td className="px-6 py-3 text-red-800" colSpan={4}>إجمالي خسائر النافق</td>
+                      <td className="px-6 py-3 text-end text-red-700">{fmt(data.pnl.deceasedLoss)}</td>
                     </tr>
                   )}
                 </tbody>

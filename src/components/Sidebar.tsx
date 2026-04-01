@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChartLine, Wheat, Users, Syringe, Truck, LayoutDashboard, Settings, X, Wrench, Receipt, FileText } from 'lucide-react';
+import { ChartLine, Wheat, Users, Syringe, Truck, LayoutDashboard, Settings, X, Wrench, Receipt, FileText, ShoppingBag } from 'lucide-react';
 import LogoutButton from './LogoutButton';
 import { useSidebar } from './SidebarContext';
 
@@ -13,6 +13,7 @@ const navItems = [
   { name: 'الرعاية الطبية', href: '/medical', icon: Syringe },
   { name: 'النقل والمصروفات', href: '/transport', icon: Truck },
   { name: 'المعدات والآلات', href: '/equipment', icon: Wrench },
+  { name: 'المصروفات العامة', href: '/expenses', icon: ShoppingBag },
   { name: 'الفواتير', href: '/invoices', icon: Receipt },
   { name: 'التقارير', href: '/reports', icon: FileText },
   { name: 'الإعدادات', href: '/settings', icon: Settings },

@@ -157,4 +157,17 @@ input, textarea, select {
   nextjs-portal, #nextjs-portal {
     display: none !important;
   }
+
+  /* ── 12. Invoice / Report print modal overlay ─────────────────────── */
+  /* The modal is `fixed inset-0 overflow-y-auto`. On print we need it   */
+  /* to collapse to a normal block so the page doesn't clip.             */
+  .fixed.inset-0.z-50 {
+    position: relative !important;
+    inset: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    background: white !important;
+    padding: 0 !important;
+  }
 }

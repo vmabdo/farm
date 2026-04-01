@@ -205,3 +205,19 @@ model Invoice {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+// 8. General Expenses (المصروفات العامة)
+model GeneralExpense {
+  id        String   @id @default(cuid())
+  itemName  String
+  cost      Float
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+// 9. Farm Settings (إعدادات المزرعة)
+// Singleton record — always uses id = 1
+model FarmSettings {
+  id       Int     @id @default(1)
+  farmName String  @default("مزرعتي")
+  logoData String? @db.Text  // Base64-encoded image string
+}
